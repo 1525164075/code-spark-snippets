@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -11,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, Plus, Calendar, Code, Tag, Eye, ChevronDown } from 'lucide-react';
 import { ICodeSnippet } from '../types/CodeSnippet';
 import CodePreviewModal from '../components/CodePreviewModal';
-import { mockDataStore } from '../services/mockDataStore';
+import { apiService } from '../services/apiService';
 
 const SnippetListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ const SnippetListPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
-  // Use useQuery to fetch data with the correct queryKey that matches the invalidation
+  // Use useQuery to fetch data
   const { 
     data: snippets = [], 
     isLoading, 
@@ -32,7 +33,7 @@ const SnippetListPage: React.FC = () => {
     error 
   } = useQuery({
     queryKey: ['snippets'],
-    queryFn: () => mockDataStore.getAllSnippets()
+    queryFn: () => apiService.getAllSnippets()
   });
 
   // Handle errors with useEffect
@@ -40,12 +41,12 @@ const SnippetListPage: React.FC = () => {
     if (isError && error) {
       console.error('Failed to fetch snippets:', error);
       toast({
-        title: "加载失败",
-        description: "无法加载代码片段列表，请稍后重试",
+        title: t('common.error'),
+        description: "Unable to load code snippets, please try again later",
         variant: "destructive",
       });
     }
-  }, [isError, error, toast]);
+  }, [isError, error, toast, t]);
 
   // 过滤和排序逻辑
   const filteredAndSortedSnippets = React.useMemo(() => {
@@ -105,7 +106,7 @@ const SnippetListPage: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <p className="text-red-600">加载失败，请稍后重试</p>
+              <p className="text-red-600">{t('common.error')}</p>
               <Button onClick={() => window.location.reload()} className="mt-4">
                 {t('common.retry')}
               </Button>
@@ -191,7 +192,7 @@ const SnippetListPage: React.FC = () => {
                     <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
-                        {new Date(snippet.createdAt).toLocaleDateString('zh-CN')}
+                        {new Date(snippet.createdAt).toLocaleDateString()}
                       </div>
                       <div className="flex items-center gap-1">
                         <Code className="h-4 w-4" />

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Editor from '@monaco-editor/react';
 import { ICodeSnippet } from '../types/CodeSnippet';
+import { apiService } from '../services/apiService';
 
 interface CardSettings {
   backgroundType: 'solid' | 'gradient' | 'wallpaper';
@@ -32,12 +34,17 @@ const SharePage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const [snippet, setSnippet] = useState<ICodeSnippet | null>(null);
-  const [loading, setLoading] = useState(true);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showCardGenerator, setShowCardGenerator] = useState(false);
   const [password, setPassword] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
+
+  // Fetch snippet data
+  const { data: snippet, isLoading, isError } = useQuery({
+    queryKey: ['snippet', id],
+    queryFn: () => apiService.getSnippetById(id!),
+    enabled: !!id
+  });
 
   // Card generator settings
   const [cardSettings, setCardSettings] = useState<CardSettings>({
@@ -62,108 +69,31 @@ const SharePage: React.FC = () => {
     'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)'
   ];
 
-  // 模拟 API 调用获取代码片段
-  useEffect(() => {
-    const fetchSnippet = async () => {
-      try {
-        setLoading(true);
-        console.log('Fetching snippet:', id);
-        
-        // 模拟 API 调用
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // 模拟数据
-        const mockSnippet: ICodeSnippet = {
-          _id: id,
-          title: '示例代码片段',
-          files: [
-            {
-              filename: 'index.js',
-              language: 'javascript',
-              content: `// 这是一个示例代码片段
-function hello() {
-  console.log('Hello, CodeSnip!');
-  return 'Welcome to CodeSnip sharing!';
-}
-
-hello();`
-            },
-            {
-              filename: 'styles.css',
-              language: 'css',
-              content: `.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.code-card {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}`
-            }
-          ],
-          description: '# 代码片段描述\n\n这是一个**示例**代码片段，展示了如何创建和分享代码。\n\n## 特性\n- 支持多文件\n- 语法高亮\n- Markdown 描述',
-          tags: ['javascript', 'example', 'demo'],
-          visibility: 'public',
-          createdAt: new Date()
-        };
-        
-        // 模拟私密片段
-        if (id === 'private-example') {
-          mockSnippet.visibility = 'private';
-          mockSnippet.password = '123456';
-          setShowPasswordModal(true);
-        }
-        
-        setSnippet(mockSnippet);
-      } catch (error) {
-        console.error('Failed to fetch snippet:', error);
-        toast({
-          title: "加载失败",
-          description: "无法加载代码片段，请稍后重试",
-          variant: "destructive",
-        });
-        navigate('/');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (id) {
-      fetchSnippet();
-    }
-  }, [id, navigate, toast]);
-
   // 验证密码
   const handlePasswordVerify = async () => {
     try {
       setPasswordLoading(true);
-      console.log('Verifying password:', password);
-      
-      // 模拟 API 调用
+      // TODO: Implement password verification
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // 模拟验证逻辑
       if (password === '123456') {
         setShowPasswordModal(false);
         toast({
-          title: "验证成功",
-          description: "密码正确，现在可以查看代码片段",
+          title: "Verification successful",
+          description: "Password correct, you can now view the code snippet",
         });
       } else {
         toast({
-          title: "密码错误",
-          description: "请输入正确的访问密码",
+          title: "Incorrect password",
+          description: "Please enter the correct access password",
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error('Password verification failed:', error);
       toast({
-        title: "验证失败",
-        description: "验证过程中出现错误，请重试",
+        title: "Verification failed",
+        description: "An error occurred during verification, please try again",
         variant: "destructive",
       });
     } finally {
@@ -181,8 +111,8 @@ hello();`
     
     navigator.clipboard.writeText(allCode).then(() => {
       toast({
-        title: "复制成功",
-        description: "已复制全部代码到剪贴板",
+        title: "Copy successful",
+        description: "All code has been copied to clipboard",
       });
     });
   };
@@ -191,17 +121,9 @@ hello();`
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
       toast({
-        title: "链接已复制",
-        description: "分享链接已复制到剪贴板",
+        title: "Link copied",
+        description: "Share link has been copied to clipboard",
       });
-    });
-  };
-
-  // 下载为图片 (简化实现)
-  const handleDownloadImage = () => {
-    toast({
-      title: "功能开发中",
-      description: "图片下载功能正在开发中，敬请期待",
     });
   };
 
@@ -230,15 +152,15 @@ hello();`
         link.href = dataUrl;
         link.click();
         toast({
-          title: "下载成功",
-          description: "PNG 图片已下载",
+          title: "Download successful",
+          description: "PNG image has been downloaded",
         });
       }
     } catch (error) {
       console.error('Download failed:', error);
       toast({
-        title: "下载失败",
-        description: "PNG 下载过程中出现错误",
+        title: "Download failed",
+        description: "An error occurred during PNG download",
         variant: "destructive",
       });
     }
@@ -255,15 +177,15 @@ hello();`
         link.href = dataUrl;
         link.click();
         toast({
-          title: "下载成功",
-          description: "SVG 图片已下载",
+          title: "Download successful",
+          description: "SVG image has been downloaded",
         });
       }
     } catch (error) {
       console.error('Download failed:', error);
       toast({
-        title: "下载失败",
-        description: "SVG 下载过程中出现错误",
+        title: "Download failed",
+        description: "An error occurred during SVG download",
         variant: "destructive",
       });
     }
@@ -275,30 +197,30 @@ hello();`
       const html = element.outerHTML;
       navigator.clipboard.writeText(html).then(() => {
         toast({
-          title: "HTML 已复制",
-          description: "包含内联样式的 HTML 代码已复制到剪贴板",
+          title: "HTML copied",
+          description: "HTML code with inline styles has been copied to clipboard",
         });
       });
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">正在加载代码片段...</p>
+          <p className="text-gray-600">Loading code snippet...</p>
         </div>
       </div>
     );
   }
 
-  if (!snippet) {
+  if (isError || !snippet) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">代码片段不存在</h1>
-          <Button onClick={() => navigate('/')}>返回首页</Button>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Code snippet not found</h1>
+          <Button onClick={() => navigate('/')}>Return to home</Button>
         </div>
       </div>
     );
@@ -330,7 +252,7 @@ hello();`
                   variant="outline"
                   size="icon"
                   onClick={handleCopyAllCode}
-                  title="复制全部代码"
+                  title="Copy all code"
                 >
                   <Copy className="h-4 w-4" />
                 </Button>
@@ -338,17 +260,17 @@ hello();`
                   variant="outline"
                   size="icon"
                   onClick={handleCopyLink}
-                  title="复制分享链接"
+                  title="Copy share link"
                 >
                   <Link className="h-4 w-4" />
                 </Button>
                 <Button
                   onClick={() => setShowCardGenerator(true)}
                   className="flex items-center gap-2"
-                  title="生成分享卡片"
+                  title="Generate share card"
                 >
                   <Share2 className="h-4 w-4" />
-                  生成分享卡片
+                  Generate Share Card
                 </Button>
               </div>
             </div>
@@ -429,13 +351,13 @@ hello();`
       <Dialog open={showCardGenerator} onOpenChange={setShowCardGenerator}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>自定义你的代码卡片</DialogTitle>
+            <DialogTitle>Customize your code card</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* 左侧控制面板 */}
             <div className="space-y-6">
               <div>
-                <Label className="text-sm font-medium mb-3 block">背景样式</Label>
+                <Label className="text-sm font-medium mb-3 block">Background Style</Label>
                 <RadioGroup
                   value={cardSettings.backgroundType}
                   onValueChange={(value: 'solid' | 'gradient' | 'wallpaper') =>
@@ -444,15 +366,15 @@ hello();`
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="solid" id="solid" />
-                    <Label htmlFor="solid">纯色</Label>
+                    <Label htmlFor="solid">Solid</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="gradient" id="gradient" />
-                    <Label htmlFor="gradient">渐变</Label>
+                    <Label htmlFor="gradient">Gradient</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="wallpaper" id="wallpaper" />
-                    <Label htmlFor="wallpaper">壁纸</Label>
+                    <Label htmlFor="wallpaper">Wallpaper</Label>
                   </div>
                 </RadioGroup>
 
@@ -488,7 +410,7 @@ hello();`
               </div>
 
               <div className="flex items-center justify-between">
-                <Label htmlFor="window-decorations">窗口装饰</Label>
+                <Label htmlFor="window-decorations">Window Decorations</Label>
                 <Switch
                   id="window-decorations"
                   checked={cardSettings.showWindowDecorations}
@@ -500,7 +422,7 @@ hello();`
 
               <div>
                 <Label className="text-sm font-medium mb-3 block">
-                  阴影大小: {cardSettings.shadowSize}px
+                  Shadow Size: {cardSettings.shadowSize}px
                 </Label>
                 <Slider
                   value={[cardSettings.shadowSize]}
@@ -515,7 +437,7 @@ hello();`
 
               <div>
                 <Label className="text-sm font-medium mb-3 block">
-                  内边距: {cardSettings.padding}px
+                  Padding: {cardSettings.padding}px
                 </Label>
                 <Slider
                   value={[cardSettings.padding]}
@@ -529,7 +451,7 @@ hello();`
               </div>
 
               <div className="flex items-center justify-between">
-                <Label htmlFor="line-numbers">显示行号</Label>
+                <Label htmlFor="line-numbers">Show Line Numbers</Label>
                 <Switch
                   id="line-numbers"
                   checked={cardSettings.showLineNumbers}
@@ -581,13 +503,13 @@ hello();`
           {/* 模态框页脚 */}
           <div className="flex justify-end gap-2 pt-4 border-t">
             <Button variant="outline" onClick={handleDownloadPNG}>
-              下载 PNG
+              Download PNG
             </Button>
             <Button variant="outline" onClick={handleDownloadSVG}>
-              下载 SVG
+              Download SVG
             </Button>
             <Button variant="outline" onClick={handleCopyHTML}>
-              复制代码(HTML)
+              Copy HTML
             </Button>
           </div>
         </DialogContent>
@@ -597,25 +519,25 @@ hello();`
       <Dialog open={showPasswordModal} onOpenChange={setShowPasswordModal}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>此代码片段已加密</DialogTitle>
+            <DialogTitle>This code snippet is encrypted</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
-              请输入访问密码来查看这个私密代码片段
+              Please enter the access password to view this private code snippet
             </p>
             <Input
               type="password"
-              placeholder="请输入访问密码"
+              placeholder="Please enter access password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handlePasswordVerify()}
             />
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => navigate('/')}>
-                取消
+                Cancel
               </Button>
               <Button onClick={handlePasswordVerify} disabled={passwordLoading}>
-                {passwordLoading ? '验证中...' : '确认'}
+                {passwordLoading ? 'Verifying...' : 'Confirm'}
               </Button>
             </div>
           </div>

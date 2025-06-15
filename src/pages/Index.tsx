@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { Search, Code, ArrowRight, Sparkles, Users, Zap } from 'lucide-react';
-import { mockDataStore } from '../services/mockDataStore';
+import { apiService } from '../services/apiService';
 import { ICodeSnippet } from '../types/CodeSnippet';
 
 const Index = () => {
@@ -20,7 +20,7 @@ const Index = () => {
   // Fetch featured snippets for the homepage
   const { data: snippets = [] } = useQuery({
     queryKey: ['snippets'],
-    queryFn: () => mockDataStore.getAllSnippets()
+    queryFn: () => apiService.getAllSnippets()
   });
 
   // Get the latest 3 snippets for the featured section

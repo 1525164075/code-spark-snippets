@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -8,7 +7,7 @@ import CodeEditorBlock from '../components/CodeEditorBlock';
 import SettingsPanel from '../components/SettingsPanel';
 import MarkdownEditorPanel from '../components/MarkdownEditorPanel';
 import { ICodeFile, CreateSnippetRequest } from '../types/CodeSnippet';
-import { mockDataStore } from '../services/mockDataStore';
+import { apiService } from '../services/apiService';
 
 const CreateSnippetPage: React.FC = () => {
   const navigate = useNavigate();
@@ -19,7 +18,7 @@ const CreateSnippetPage: React.FC = () => {
   // Core state management
   const [files, setFiles] = useState<ICodeFile[]>([
     {
-      filename: t('create.filename'),
+      filename: 'index.js',
       language: 'javascript',
       content: '// Write your code here\nconsole.log("Hello, CodeSnip!");'
     }
@@ -34,10 +33,11 @@ const CreateSnippetPage: React.FC = () => {
 
   // Use useMutation to handle snippet creation
   const mutation = useMutation({
-    mutationFn: (data: CreateSnippetRequest) => mockDataStore.createSnippet(data),
+    mutationFn: (data: CreateSnippetRequest) => apiService.createSnippet(data),
     onSuccess: () => {
-      // Key fix: Invalidate the 'snippets' query to trigger automatic refetch
+      // Invalidate queries to trigger refetch
       queryClient.invalidateQueries({ queryKey: ['snippets'] });
+      queryClient.invalidateQueries({ queryKey: ['userSnippets'] });
       
       toast({
         title: t('create.success'),
@@ -52,7 +52,7 @@ const CreateSnippetPage: React.FC = () => {
       console.error('Failed to create snippet:', error);
       toast({
         title: t('errors.createFailed'),
-        description: t('errors.checkInput'),
+        description: error.message || t('errors.checkInput'),
         variant: "destructive",
       });
     }
