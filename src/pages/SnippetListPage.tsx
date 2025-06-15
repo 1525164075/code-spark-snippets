@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
@@ -115,8 +114,12 @@ const SnippetListPage: React.FC = () => {
     error 
   } = useQuery({
     queryKey: ['snippets'],
-    queryFn: fetchSnippets,
-    onError: (error: Error) => {
+    queryFn: fetchSnippets
+  });
+
+  // 使用 useEffect 来处理错误
+  useEffect(() => {
+    if (isError && error) {
       console.error('Failed to fetch snippets:', error);
       toast({
         title: "加载失败",
@@ -124,7 +127,7 @@ const SnippetListPage: React.FC = () => {
         variant: "destructive",
       });
     }
-  });
+  }, [isError, error, toast]);
 
   // 过滤和排序逻辑
   const filteredAndSortedSnippets = React.useMemo(() => {
