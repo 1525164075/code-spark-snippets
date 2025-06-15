@@ -35,7 +35,7 @@ const Actions: React.FC<ActionsProps> = ({
     onPasswordChange(result);
   }, [onPasswordChange]);
 
-  // 动画配置
+  // 动画配置 - 修复类型错误
   const slideVariants = {
     hidden: {
       height: 0,
@@ -43,7 +43,7 @@ const Actions: React.FC<ActionsProps> = ({
       marginTop: 0,
       transition: {
         duration: 0.3,
-        ease: "easeInOut"
+        ease: [0.4, 0.0, 0.2, 1] // 使用贝塞尔曲线数组而不是字符串
       }
     },
     visible: {
@@ -52,7 +52,7 @@ const Actions: React.FC<ActionsProps> = ({
       marginTop: 16,
       transition: {
         duration: 0.3,
-        ease: "easeInOut"
+        ease: [0.4, 0.0, 0.2, 1] // 使用贝塞尔曲线数组而不是字符串
       }
     }
   };
