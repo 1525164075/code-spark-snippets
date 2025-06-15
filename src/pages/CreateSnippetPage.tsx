@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -33,8 +34,20 @@ const CreateSnippetPage: React.FC = () => {
 
   // Use useMutation to handle snippet creation
   const mutation = useMutation({
-    mutationFn: (data: CreateSnippetRequest) => apiService.createSnippet(data),
-    onSuccess: () => {
+    mutationFn: async (data: CreateSnippetRequest) => {
+      console.log('Creating snippet with data:', data);
+      
+      try {
+        const result = await apiService.createSnippet(data);
+        console.log('Snippet created successfully:', result);
+        return result;
+      } catch (error) {
+        console.error('Error creating snippet:', error);
+        throw error;
+      }
+    },
+    onSuccess: (data) => {
+      console.log('Mutation success, data:', data);
       // Invalidate queries to trigger refetch
       queryClient.invalidateQueries({ queryKey: ['snippets'] });
       queryClient.invalidateQueries({ queryKey: ['userSnippets'] });
@@ -48,8 +61,8 @@ const CreateSnippetPage: React.FC = () => {
         navigate('/snippets');
       }, 1000);
     },
-    onError: (error: Error) => {
-      console.error('Failed to create snippet:', error);
+    onError: (error: any) => {
+      console.error('Mutation failed:', error);
       toast({
         title: t('errors.createFailed'),
         description: error.message || t('errors.checkInput'),
@@ -60,6 +73,8 @@ const CreateSnippetPage: React.FC = () => {
 
   // Submit handling function
   const handleSubmit = useCallback(async () => {
+    console.log('Submit started with:', { title, files, visibility, password });
+    
     // Validation
     if (!title.trim()) {
       toast({
@@ -106,17 +121,21 @@ const CreateSnippetPage: React.FC = () => {
       expiresAt: expiryDate || undefined,
     };
 
+    console.log('Submitting request data:', requestData);
+
     // Execute creation
     mutation.mutate(requestData);
   }, [title, files, description, tags, visibility, password, expiryDate, mutation, toast, t]);
 
   // File change handling
   const handleFilesChange = useCallback((newFiles: ICodeFile[]) => {
+    console.log('Files changed:', newFiles);
     setFiles(newFiles);
   }, []);
 
   // Visibility change handling
   const handleVisibilityChange = useCallback((newVisibility: 'public' | 'private') => {
+    console.log('Visibility changed to:', newVisibility);
     setVisibility(newVisibility);
     if (newVisibility === 'public') {
       setPassword('');
