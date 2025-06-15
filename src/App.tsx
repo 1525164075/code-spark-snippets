@@ -12,6 +12,7 @@ import SharePage from "./pages/SharePage";
 import SnippetListPage from "./pages/SnippetListPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ProfilePage from "./pages/ProfilePage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -35,6 +36,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <CreateSnippetPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/profile" 
+                element={
+                  <ProtectedRoute>
+                    <ProfilePage />
                   </ProtectedRoute>
                 } 
               />
