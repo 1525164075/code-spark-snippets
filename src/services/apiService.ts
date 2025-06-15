@@ -37,7 +37,7 @@ export const apiService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('用户未认证');
 
-    // Validate required data
+    // Basic validation
     if (!snippetData.files || snippetData.files.length === 0) {
       throw new Error('至少需要一个代码文件');
     }
@@ -47,79 +47,42 @@ export const apiService = {
     }
 
     try {
-      // 更严格的数据清理和编码处理
-      const cleanFiles = snippetData.files.map(file => {
-        let cleanContent = (file.content || '').trim();
-        
-        // 移除BOM和其他问题字符
-        cleanContent = cleanContent
-          .replace(/\uFEFF/g, '') // BOM
-          .replace(/\u0000/g, '') // NULL字符
-          .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''); // 控制字符
-        
-        // 确保内容是有效的UTF-8
-        try {
-          // 测试编码/解码
-          const encoded = encodeURIComponent(cleanContent);
-          const decoded = decodeURIComponent(encoded);
-          if (decoded !== cleanContent) {
-            console.warn('Content encoding mismatch detected, using encoded version');
-            cleanContent = decoded;
-          }
-        } catch (encodingError) {
-          console.warn('Content encoding test failed:', encodingError);
-          // 如果编码测试失败，移除所有非ASCII字符
-          cleanContent = cleanContent.replace(/[^\x20-\x7E\s]/g, '');
-        }
+      // Simple content cleaning - remove only problematic characters
+      const cleanFiles = snippetData.files.map(file => ({
+        filename: (file.filename || 'untitled').trim().substring(0, 100),
+        language: (file.language || 'javascript').trim(),
+        content: (file.content || '').replace(/\0/g, '') // Only remove null characters
+      }));
 
-        return {
-          filename: (file.filename || 'untitled').trim().substring(0, 100), // 限制文件名长度
-          language: (file.language || 'javascript').trim(),
-          content: cleanContent
-        };
-      });
-
-      // 验证清理后的数据
-      const hasValidContent = cleanFiles.some(file => file.content.length > 0);
+      // Validate that we have content
+      const hasValidContent = cleanFiles.some(file => file.content.trim().length > 0);
       if (!hasValidContent) {
         throw new Error('代码内容不能为空');
       }
 
-      // 创建JSON字符串，使用安全的序列化
-      let contentString;
-      try {
-        contentString = JSON.stringify(cleanFiles, null, 0);
-        
-        // 验证JSON可以被解析
-        const testParse = JSON.parse(contentString);
-        if (!Array.isArray(testParse) || testParse.length === 0) {
-          throw new Error('数据序列化验证失败');
-        }
-      } catch (jsonError) {
-        console.error('JSON serialization error:', jsonError);
-        throw new Error('代码内容包含无法处理的字符，请检查输入');
-      }
-
-      // 检查内容大小限制
-      if (contentString.length > 1000000) { // 1MB限制
+      // Simple JSON serialization
+      const contentString = JSON.stringify(cleanFiles);
+      
+      // Check size limit (1MB)
+      if (contentString.length > 1000000) {
         throw new Error('代码内容过大，请减少内容长度');
       }
 
       const snippet = {
-        title: snippetData.title.trim().substring(0, 200), // 限制标题长度
-        description: (snippetData.description || '').trim().substring(0, 1000), // 限制描述长度
+        title: snippetData.title.trim().substring(0, 200),
+        description: (snippetData.description || '').trim().substring(0, 1000),
         content: contentString,
         language: cleanFiles[0]?.language || 'javascript',
         tags: Array.isArray(snippetData.tags) 
-          ? snippetData.tags.filter(tag => tag && tag.trim()).slice(0, 10) // 限制标签数量
+          ? snippetData.tags.filter(tag => tag && tag.trim()).slice(0, 10)
           : [],
         is_private: snippetData.visibility === 'private',
         author_id: user.id
       };
 
-      console.log('Inserting snippet with processed data:', {
+      console.log('Inserting snippet:', {
         ...snippet,
-        content: `[${contentString.length} chars]`
+        content: `[${contentString.length} characters]`
       });
 
       const { data, error } = await supabase
@@ -130,36 +93,13 @@ export const apiService = {
 
       if (error) {
         console.error('Database error:', error);
-        
-        // 更详细的错误处理
-        if (error.message.includes('invalid input syntax') || 
-            error.message.includes('encoding') ||
-            error.message.includes('character')) {
-          throw new Error('代码内容包含无效字符，请检查特殊字符或编码');
-        }
-        if (error.message.includes('value too long')) {
-          throw new Error('内容过长，请减少代码长度');
-        }
-        if (error.code === '23505') {
-          throw new Error('标题已存在，请使用不同的标题');
-        }
-        if (error.code === '23514') {
-          throw new Error('数据格式不符合要求，请检查输入');
-        }
-        
         throw new Error(`创建失败: ${error.message}`);
       }
 
       console.log('Snippet created successfully:', data);
 
-      // 解析返回的内容
-      let parsedFiles;
-      try {
-        parsedFiles = JSON.parse(data.content);
-      } catch (parseError) {
-        console.error('Failed to parse saved content:', parseError);
-        parsedFiles = cleanFiles; // 使用原始清理后的数据
-      }
+      // Parse the returned content
+      const parsedFiles = JSON.parse(data.content);
 
       return {
         _id: data.id,
@@ -173,21 +113,6 @@ export const apiService = {
       };
     } catch (error: any) {
       console.error('Error in createSnippet:', error);
-      
-      // 提供更友好的错误信息
-      if (error.message.includes('encoding') || error.message.includes('编码')) {
-        throw new Error('代码内容编码错误，请避免使用特殊字符');
-      }
-      if (error.message.includes('auth') || error.message.includes('认证')) {
-        throw new Error('用户认证失败，请重新登录');
-      }
-      if (error.message.includes('network') || error.message.includes('fetch')) {
-        throw new Error('网络连接错误，请检查网络连接');
-      }
-      if (error.message.includes('timeout')) {
-        throw new Error('请求超时，请重试');
-      }
-      
       throw new Error(error.message || '创建失败，请重试');
     }
   },

@@ -40,14 +40,7 @@ const CreateSnippetPage: React.FC = () => {
         files: data.files.map(f => ({ ...f, content: `[${f.content.length} chars]` }))
       });
       
-      try {
-        const result = await apiService.createSnippet(data);
-        console.log('Snippet created successfully:', result);
-        return result;
-      } catch (error: any) {
-        console.error('Error creating snippet:', error);
-        throw error;
-      }
+      return await apiService.createSnippet(data);
     },
     onSuccess: (data) => {
       console.log('Mutation success, data:', data);
@@ -66,29 +59,24 @@ const CreateSnippetPage: React.FC = () => {
     onError: (error: any) => {
       console.error('Mutation failed with error:', error);
       
-      let errorMessage = error.message || t('errors.checkInput');
-      
       toast({
         title: t('errors.createFailed'),
-        description: errorMessage,
+        description: error.message || t('errors.checkInput'),
         variant: "destructive",
       });
     }
   });
 
-  // Submit handling function with improved validation
+  // Submit handling function with basic validation
   const handleSubmit = useCallback(async () => {
     console.log('Submit started with state:', { 
       title, 
       filesCount: files.length, 
-      visibility, 
-      passwordLength: password.length,
-      tagsCount: tags.length
+      visibility
     });
     
-    // Enhanced validation
+    // Basic validation
     if (!title.trim()) {
-      console.error('Validation failed: Title is empty');
       toast({
         title: t('common.error'),
         description: t('errors.titleRequired'),
@@ -98,7 +86,6 @@ const CreateSnippetPage: React.FC = () => {
     }
 
     if (files.length === 0) {
-      console.error('Validation failed: No files provided');
       toast({
         title: t('common.error'), 
         description: t('errors.fileRequired'),
@@ -107,27 +94,15 @@ const CreateSnippetPage: React.FC = () => {
       return;
     }
 
-    // 检查是否有内容过长的文件
-    const maxFileSize = 500000; // 500KB per file
-    const oversizedFiles = files.filter(file => file.content.length > maxFileSize);
-    if (oversizedFiles.length > 0) {
-      toast({
-        title: t('common.error'),
-        description: `文件 "${oversizedFiles[0].filename}" 内容过大，请减少内容长度`,
-        variant: "destructive",
-      });
-      return;
-    }
-
+    // Check for empty files
     const hasEmptyFiles = files.some(file => !file.content.trim());
     if (hasEmptyFiles) {
-      console.warn('Warning: Some files are empty');
       const confirmContinue = window.confirm(t('errors.emptyFiles'));
       if (!confirmContinue) return;
     }
 
+    // Password validation for private snippets
     if (visibility === 'private' && password.length < 6) {
-      console.error('Validation failed: Password too short for private snippet');
       toast({
         title: t('common.error'),
         description: t('errors.passwordLength'),
@@ -136,52 +111,12 @@ const CreateSnippetPage: React.FC = () => {
       return;
     }
 
-    // 更严格的数据预处理
-    const processedFiles = files.map(file => {
-      let content = (file.content || '').trim();
-      let filename = (file.filename || 'untitled').trim();
-      let language = (file.language || 'javascript').trim();
-      
-      // 检测和处理潜在的编码问题
-      try {
-        // 移除潜在的问题字符
-        content = content
-          .replace(/\uFEFF/g, '') // BOM
-          .replace(/\u0000/g, '') // NULL
-          .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''); // 控制字符
-        
-        // 验证内容可以正确编码
-        const testEncode = encodeURIComponent(content);
-        const testDecode = decodeURIComponent(testEncode);
-        
-        if (testDecode !== content) {
-          console.warn(`Encoding issue detected in file: ${filename}`);
-        }
-      } catch (encodingError) {
-        console.error('Content encoding error:', encodingError);
-        toast({
-          title: t('common.error'),
-          description: `文件 "${filename}" 包含无法处理的字符，请检查内容`,
-          variant: "destructive",
-        });
-        return null;
-      }
-
-      return {
-        filename: filename.substring(0, 100), // 限制文件名长度
-        language,
-        content
-      };
-    }).filter(Boolean) as ICodeFile[];
-
-    if (processedFiles.length === 0) {
-      toast({
-        title: t('common.error'),
-        description: '没有有效的文件内容',
-        variant: "destructive",
-      });
-      return;
-    }
+    // Simple file processing - just basic cleanup
+    const processedFiles = files.map(file => ({
+      filename: (file.filename || 'untitled').trim().substring(0, 100),
+      language: (file.language || 'javascript').trim(),
+      content: (file.content || '').replace(/\0/g, '') // Remove only null characters
+    }));
 
     const requestData: CreateSnippetRequest = {
       title: title.trim().substring(0, 200),
@@ -199,11 +134,7 @@ const CreateSnippetPage: React.FC = () => {
       files: requestData.files.map(f => ({ ...f, content: `[${f.content.length} chars]` }))
     });
 
-    try {
-      mutation.mutate(requestData);
-    } catch (error: any) {
-      console.error('Error in mutation.mutate:', error);
-    }
+    mutation.mutate(requestData);
   }, [title, files, description, tags, visibility, password, expiryDate, mutation, toast, t]);
 
   // File change handling
