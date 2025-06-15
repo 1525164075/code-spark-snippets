@@ -2,11 +2,10 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { Row, Col } from 'antd';
 import CodeEditorBlock from '../components/CodeEditorBlock';
 import SettingsPanel from '../components/SettingsPanel';
 import MarkdownEditorPanel from '../components/MarkdownEditorPanel';
-import { ICodeFile, ICodeSnippet, CreateSnippetRequest } from '../types/CodeSnippet';
+import { ICodeFile, CreateSnippetRequest } from '../types/CodeSnippet';
 
 const CreateSnippetPage: React.FC = () => {
   const navigate = useNavigate();
@@ -140,26 +139,24 @@ const CreateSnippetPage: React.FC = () => {
 
       {/* 主内容区 - 双列布局 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Row gutter={24}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* 左侧列 - 主内容创作区 */}
-          <Col span={16}>
-            <div className="space-y-6">
-              {/* 代码编辑器区域 */}
-              <CodeEditorBlock
-                files={files}
-                onFilesChange={handleFilesChange}
-              />
+          <div className="lg:col-span-2 space-y-6">
+            {/* 代码编辑器区域 */}
+            <CodeEditorBlock
+              files={files}
+              onFilesChange={handleFilesChange}
+            />
 
-              {/* Markdown 描述区域 */}
-              <MarkdownEditorPanel
-                value={description}
-                onChange={setDescription}
-              />
-            </div>
-          </Col>
+            {/* Markdown 描述区域 */}
+            <MarkdownEditorPanel
+              value={description}
+              onChange={setDescription}
+            />
+          </div>
 
           {/* 右侧列 - 配置与操作区 */}
-          <Col span={8}>
+          <div className="lg:col-span-1">
             <SettingsPanel
               title={title}
               setTitle={setTitle}
@@ -174,8 +171,8 @@ const CreateSnippetPage: React.FC = () => {
               onSubmit={handleSubmit}
               loading={loading}
             />
-          </Col>
-        </Row>
+          </div>
+        </div>
       </div>
     </div>
   );
