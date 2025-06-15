@@ -61,10 +61,12 @@ export class MockSnippetService implements SnippetRouteHandlers {
 
   async createSnippet(request: CreateSnippetRequest): Promise<CreateSnippetResponse> {
     const id = 'snippet_' + Date.now();
+    const now = new Date();
     const snippet: ICodeSnippet = {
       _id: id,
       ...request,
-      createdAt: new Date(),
+      createdAt: now,
+      updatedAt: now
     };
     
     this.snippets.set(id, snippet);
@@ -89,7 +91,11 @@ export class MockSnippetService implements SnippetRouteHandlers {
       throw new Error('Snippet not found');
     }
     
-    const updatedSnippet = { ...snippet, ...request };
+    const updatedSnippet = { 
+      ...snippet, 
+      ...request, 
+      updatedAt: new Date() 
+    };
     this.snippets.set(id, updatedSnippet);
     return updatedSnippet;
   }
