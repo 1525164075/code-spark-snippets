@@ -1,73 +1,89 @@
-# Welcome to your Lovable project
+# CodeSnip / Lovable ✨
 
-## Project info
 
-**URL**: https://lovable.dev/projects/bf029aac-0665-47b2-ba25-e53d161d3d37
 
-## How can I edit this code?
+<p align="center">
+  <strong>An elegant web application for creating, sharing, and managing code snippets.</strong>
+  <br />
+  Built with a focus on a clean user experience and modern design principles.
+</p>
 
-There are several ways of editing your application.
+<p align="center">
+  <a href="https://code-spark-snippets.vercel.app"><strong>🚀 View Live Demo</strong></a>
+</p>
 
-**Use Lovable**
+<p align="center">
+  <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
+  <img src="https://img.shields.io/badge/tech-React%20%7C%20TypeScript%20%7C%20Supabase-green.svg" alt="Tech Stack">
+  <img src="https://img.shields.io/github/last-commit/1525164075/code-spark-snippets" alt="Last Commit">
+</p>
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/bf029aac-0665-47b2-ba25-e53d161d3d37) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🌟 About The Project
 
-**Use your preferred IDE**
+CodeSnip is a full-featured platform meticulously designed for developers who value both functionality and aesthetics. It provides a seamless experience for writing and sharing code, powered by the same editor as VS Code (Monaco) for superior syntax highlighting.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Whether you need to quickly share a piece of code with a colleague, save a useful snippet for later, or present code in a beautiful way, CodeSnip has you covered.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🚀 Key Features
 
-Follow these steps:
+* **💻 First-Class Code Editor**: A superior editing experience with Monaco Editor, featuring syntax highlighting and multiple themes.
+* **🔗 Flexible Sharing**: Share snippets publicly with a unique URL, or keep them private with secure, password-protected links.
+* **👤 Full User Authentication**: Sign up and log in with Supabase to manage all your personal snippets in a dedicated dashboard.
+* **🎨 Polished & Inspired UI**: A clean, minimalist, and responsive interface designed with a focus on clarity, space, and user experience.
+* **🌍 Internationalization (i18n)**: Fully translated interface supporting both English and Simplified Chinese.
+* **✍️ Rich Markdown Support**: Add detailed, formatted descriptions to your snippets using a Markdown editor with a live preview.
+* **🖱️ Interactive Experience**: Features like one-click modal previews and a smooth, modern user flow.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 🛠️ Tech Stack
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+This project is built with a modern and robust tech stack:
 
-# Step 3: Install the necessary dependencies.
-npm i
+* **Frontend**: [React](https://reactjs.org/), [Vite](https://vitejs.dev/), [TypeScript](https://www.typescriptlang.org/)
+* **UI Framework**: [Ant Design](https://ant.design/)
+* **Backend & Database**: [Supabase](https://supabase.com/) (PostgreSQL, Auth, Storage)
+* **State Management**: [React Query (TanStack Query)](https://tanstack.com/query/latest) for server state
+* **Deployment**: [Vercel](https://vercel.com/)
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+## 🏁 Getting Started
 
-**Edit a file directly in GitHub**
+To get a local copy up and running, follow these simple steps.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Prerequisites
 
-**Use GitHub Codespaces**
+* Node.js (v18 or later)
+* npm
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Installation
 
-## What technologies are used for this project?
+1.  **Clone the repo**
+    ```sh
+    git clone [https://github.com/1525164075/code-spark-snippets.git](https://github.com/1525164075/code-spark-snippets.git)
+    cd code-spark-snippets
+    ```
 
-This project is built with:
+2.  **Install NPM packages**
+    ```sh
+    npm install
+    ```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+3.  **Set up your environment variables**
+    * Create a `.env` file in the root directory.
+    * You'll need to get your Supabase URL and Anon Key from your Supabase project dashboard.
+    ```
+    VITE_SUPABASE_URL=[Your Supabase Project URL]
+    VITE_SUPABASE_ANON_KEY=[Your Supabase Anon Key]
+    ```
 
-## How can I deploy this project?
+4.  **Run the development server**
+    ```sh
+    npm run dev
+    ```
+    Your application should now be running on `http://localhost:5173` (or another port).
 
-Simply open [Lovable](https://lovable.dev/projects/bf029aac-0665-47b2-ba25-e53d161d3d37) and click on Share -> Publish.
+## 📄 License
 
-## Can I connect a custom domain to my Lovable project?
+Distributed under the MIT License. See `LICENSE` for more information.
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+---
