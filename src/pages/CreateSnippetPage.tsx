@@ -111,11 +111,11 @@ const CreateSnippetPage: React.FC = () => {
       return;
     }
 
-    // Simple file processing - just basic cleanup
+    // Clean file processing
     const processedFiles = files.map(file => ({
       filename: (file.filename || 'untitled').trim().substring(0, 100),
       language: (file.language || 'javascript').trim(),
-      content: (file.content || '').replace(/\0/g, '') // Remove only null characters
+      content: (file.content || '').trim()
     }));
 
     const requestData: CreateSnippetRequest = {

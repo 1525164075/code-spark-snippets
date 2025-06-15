@@ -47,20 +47,20 @@ export const apiService = {
     }
 
     try {
-      // Simple content cleaning - remove only problematic characters
+      // Clean and validate files
       const cleanFiles = snippetData.files.map(file => ({
         filename: (file.filename || 'untitled').trim().substring(0, 100),
         language: (file.language || 'javascript').trim(),
-        content: (file.content || '').replace(/\0/g, '') // Only remove null characters
+        content: (file.content || '').trim()
       }));
 
       // Validate that we have content
-      const hasValidContent = cleanFiles.some(file => file.content.trim().length > 0);
+      const hasValidContent = cleanFiles.some(file => file.content.length > 0);
       if (!hasValidContent) {
         throw new Error('代码内容不能为空');
       }
 
-      // Simple JSON serialization
+      // Create the content as simple JSON string
       const contentString = JSON.stringify(cleanFiles);
       
       // Check size limit (1MB)
