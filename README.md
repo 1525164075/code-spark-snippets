@@ -1,6 +1,9 @@
 # CodeSnip / Lovable ✨
 
 
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/96c9de61-405f-416c-970c-71a20b1d1843" alt="Project Banner" width="800">
+</div>
 
 <p align="center">
   <strong>An elegant web application for creating, sharing, and managing code snippets.</strong>
