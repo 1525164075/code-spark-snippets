@@ -54,7 +54,29 @@
     "title": "Create Code Snippet",
     "subtitle": "Share your code, let knowledge spread further",
     "success": "Created successfully!",
-    "successDesc": "Your code snippet has been created successfully"
+    "successDesc": "Your code snippet has been created successfully",
+    "titlePlaceholder": "Enter snippet title...",
+    "descriptionPlaceholder": "Add description (optional)...",
+    "addTag": "Add Tag",
+    "expiryDate": "Expiry Date",
+    "visibility": "Visibility",
+    "password": "Password",
+    "passwordPlaceholder": "Enter password for private snippet",
+    "createButton": "Create Snippet",
+    "creating": "Creating...",
+    "addFile": "Add File",
+    "deleteFile": "Delete File",
+    "filename": "Filename",
+    "language": "Language",
+    "codeContent": "Code Content"
+  },
+  "errors": {
+    "titleRequired": "Please enter snippet title",
+    "fileRequired": "At least one code file is required",
+    "emptyFiles": "Some code files are empty, continue creating?",
+    "passwordLength": "Private snippet password must be at least 6 characters",
+    "createFailed": "Creation failed",
+    "checkInput": "Please check your input and try again"
   },
   "common": {
     "loading": "Loading...",

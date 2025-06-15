@@ -54,7 +54,29 @@
     "title": "创建代码片段",
     "subtitle": "分享你的代码，让知识传播得更远",
     "success": "创建成功！",
-    "successDesc": "你的代码片段已成功创建"
+    "successDesc": "你的代码片段已成功创建",
+    "titlePlaceholder": "输入代码片段标题...",
+    "descriptionPlaceholder": "添加描述（可选）...",
+    "addTag": "添加标签",
+    "expiryDate": "到期日期",
+    "visibility": "可见性",
+    "password": "密码",
+    "passwordPlaceholder": "输入私有代码片段密码",
+    "createButton": "创建代码片段",
+    "creating": "创建中...",
+    "addFile": "添加文件",
+    "deleteFile": "删除文件",
+    "filename": "文件名",
+    "language": "语言",
+    "codeContent": "代码内容"
+  },
+  "errors": {
+    "titleRequired": "请输入代码片段标题",
+    "fileRequired": "至少需要添加一个代码文件",
+    "emptyFiles": "某些代码文件内容为空，确定要继续创建吗？",
+    "passwordLength": "私有代码片段密码长度至少需要6位字符",
+    "createFailed": "创建失败",
+    "checkInput": "请检查输入信息后重试"
   },
   "common": {
     "loading": "正在加载...",

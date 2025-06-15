@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -9,21 +10,6 @@ import MarkdownEditorPanel from '../components/MarkdownEditorPanel';
 import { ICodeFile, CreateSnippetRequest } from '../types/CodeSnippet';
 import { mockDataStore } from '../services/mockDataStore';
 
-// Mock API function for creating code snippets
-const createSnippet = async (data: CreateSnippetRequest): Promise<any> => {
-  console.log('Creating code snippet with data:', data);
-  
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  // Simulate success response
-  return {
-    id: 'snippet-' + Date.now(),
-    ...data,
-    createdAt: new Date()
-  };
-};
-
 const CreateSnippetPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -33,9 +19,9 @@ const CreateSnippetPage: React.FC = () => {
   // Core state management
   const [files, setFiles] = useState<ICodeFile[]>([
     {
-      filename: '代码一',
+      filename: t('create.filename'),
       language: 'javascript',
-      content: '// 在这里编写你的代码\nconsole.log("Hello, CodeSnip!");'
+      content: '// Write your code here\nconsole.log("Hello, CodeSnip!");'
     }
   ]);
   
@@ -65,8 +51,8 @@ const CreateSnippetPage: React.FC = () => {
     onError: (error: Error) => {
       console.error('Failed to create snippet:', error);
       toast({
-        title: "创建失败",
-        description: "请检查输入信息后重试",
+        title: t('errors.createFailed'),
+        description: t('errors.checkInput'),
         variant: "destructive",
       });
     }
@@ -77,8 +63,8 @@ const CreateSnippetPage: React.FC = () => {
     // Validation
     if (!title.trim()) {
       toast({
-        title: "错误",
-        description: "请输入代码片段标题",
+        title: t('common.error'),
+        description: t('errors.titleRequired'),
         variant: "destructive",
       });
       return;
@@ -86,8 +72,8 @@ const CreateSnippetPage: React.FC = () => {
 
     if (files.length === 0) {
       toast({
-        title: "错误", 
-        description: "至少需要添加一个代码文件",
+        title: t('common.error'), 
+        description: t('errors.fileRequired'),
         variant: "destructive",
       });
       return;
@@ -95,15 +81,15 @@ const CreateSnippetPage: React.FC = () => {
 
     const hasEmptyFiles = files.some(file => !file.content.trim());
     if (hasEmptyFiles) {
-      const confirmContinue = window.confirm('某些代码文件内容为空，确定要继续创建吗？');
+      const confirmContinue = window.confirm(t('errors.emptyFiles'));
       if (!confirmContinue) return;
     }
 
     // Validate private snippet password
     if (visibility === 'private' && password.length < 6) {
       toast({
-        title: "错误",
-        description: "私有代码片段密码长度至少需要6位字符",
+        title: t('common.error'),
+        description: t('errors.passwordLength'),
         variant: "destructive",
       });
       return;
@@ -122,7 +108,7 @@ const CreateSnippetPage: React.FC = () => {
 
     // Execute creation
     mutation.mutate(requestData);
-  }, [title, files, description, tags, visibility, password, expiryDate, mutation, toast]);
+  }, [title, files, description, tags, visibility, password, expiryDate, mutation, toast, t]);
 
   // File change handling
   const handleFilesChange = useCallback((newFiles: ICodeFile[]) => {
