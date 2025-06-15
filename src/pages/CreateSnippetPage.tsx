@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback } from 'react';
-import { Form, message, notification } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 import CodeEditorBlock from '../components/CodeEditorBlock';
 import MoreSettings from '../components/MoreSettings';
 import MarkdownEditor from '../components/MarkdownEditor';
@@ -9,8 +9,8 @@ import Actions from '../components/Actions';
 import { ICodeFile, ICodeSnippet, CreateSnippetRequest } from '../types/CodeSnippet';
 
 const CreateSnippetPage: React.FC = () => {
-  const [form] = Form.useForm();
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   // 核心状态管理
   const [files, setFiles] = useState<ICodeFile[]>([
@@ -21,6 +21,9 @@ const CreateSnippetPage: React.FC = () => {
     }
   ]);
   
+  const [title, setTitle] = useState<string>('');
+  const [tags, setTags] = useState<string[]>([]);
+  const [expiryHours, setExpiryHours] = useState<number | null>(null);
   const [description, setDescription] = useState<string>('');
   const [visibility, setVisibility] = useState<'public' | 'private'>('public');
   const [password, setPassword] = useState<string>('');
@@ -29,53 +32,39 @@ const CreateSnippetPage: React.FC = () => {
   // 提交处理函数
   const handleSubmit = useCallback(async () => {
     try {
-      // 验证表单
-      const formValues = await form.validateFields();
-      
-      // 验证代码文件
+      // 验证输入
+      if (!title.trim()) {
+        toast({
+          title: "错误",
+          description: "请输入代码片段标题",
+          variant: "destructive",
+        });
+        return;
+      }
+
       if (files.length === 0) {
-        message.error('至少需要添加一个代码文件');
+        toast({
+          title: "错误", 
+          description: "至少需要添加一个代码文件",
+          variant: "destructive",
+        });
         return;
       }
 
       const hasEmptyFiles = files.some(file => !file.content.trim());
       if (hasEmptyFiles) {
-        const confirm = await new Promise<boolean>((resolve) => {
-          notification.warning({
-            message: '检测到空文件',
-            description: '某些代码文件内容为空，确定要继续创建吗？',
-            btn: (
-              <div className="space-x-2">
-                <button 
-                  className="text-blue-500 hover:text-blue-700"
-                  onClick={() => {
-                    notification.destroy();
-                    resolve(true);
-                  }}
-                >
-                  继续创建
-                </button>
-                <button 
-                  className="text-gray-500 hover:text-gray-700"
-                  onClick={() => {
-                    notification.destroy();
-                    resolve(false);
-                  }}
-                >
-                  取消
-                </button>
-              </div>
-            ),
-            duration: 0,
-          });
-        });
-        
-        if (!confirm) return;
+        // 简化的确认逻辑
+        const confirmContinue = window.confirm('某些代码文件内容为空，确定要继续创建吗？');
+        if (!confirmContinue) return;
       }
 
       // 验证私有片段密码
       if (visibility === 'private' && password.length < 6) {
-        message.error('私有代码片段密码长度至少需要6位字符');
+        toast({
+          title: "错误",
+          description: "私有代码片段密码长度至少需要6位字符",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -83,21 +72,20 @@ const CreateSnippetPage: React.FC = () => {
 
       // 构建请求数据
       const requestData: CreateSnippetRequest = {
-        title: formValues.title,
+        title: title.trim(),
         files: files,
         description: description,
-        tags: formValues.tags || [],
+        tags: tags,
         visibility: visibility,
         password: visibility === 'private' ? password : undefined,
-        expiresAt: formValues.expiryHours ? 
-          new Date(Date.now() + formValues.expiryHours * 60 * 60 * 1000) : 
+        expiresAt: expiryHours ? 
+          new Date(Date.now() + expiryHours * 60 * 60 * 1000) : 
           undefined,
       };
 
       console.log('Creating code snippet with data:', requestData);
 
       // 模拟 API 调用
-      // 在实际应用中，这里应该调用真实的 API
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       const mockResponse = {
@@ -106,36 +94,22 @@ const CreateSnippetPage: React.FC = () => {
       };
 
       // 成功提示
-      notification.success({
-        message: '代码片段创建成功！',
-        description: (
-          <div>
-            <p>你的代码片段已成功创建</p>
-            <p className="text-sm text-gray-500 mt-1">
-              分享链接: {window.location.origin}{mockResponse.url}
-            </p>
-          </div>
-        ),
-        duration: 5,
+      toast({
+        title: "创建成功！",
+        description: `你的代码片段已成功创建。分享链接: ${window.location.origin}${mockResponse.url}`,
       });
-
-      // 重置表单（可选）
-      // form.resetFields();
-      // setFiles([{ filename: '代码一', language: 'javascript', content: '' }]);
-      // setDescription('');
-      // setVisibility('public');
-      // setPassword('');
-
-      // 导航到分享页面或列表页面
-      // navigate(mockResponse.url);
 
     } catch (error) {
       console.error('Failed to create snippet:', error);
-      message.error('创建失败，请检查输入信息后重试');
+      toast({
+        title: "创建失败",
+        description: "请检查输入信息后重试",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
-  }, [form, files, description, visibility, password, navigate]);
+  }, [title, files, description, tags, visibility, password, expiryHours, toast]);
 
   // 文件变化处理
   const handleFilesChange = useCallback((newFiles: ICodeFile[]) => {
@@ -171,16 +145,7 @@ const CreateSnippetPage: React.FC = () => {
 
       {/* 主内容区 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={{
-            title: '',
-            tags: [],
-            expiryHours: null,
-          }}
-          className="space-y-6"
-        >
+        <div className="space-y-6">
           {/* 代码编辑器区域 */}
           <CodeEditorBlock
             files={files}
@@ -188,7 +153,14 @@ const CreateSnippetPage: React.FC = () => {
           />
 
           {/* 更多设置区域 */}
-          <MoreSettings form={form} />
+          <MoreSettings
+            title={title}
+            setTitle={setTitle}
+            tags={tags}
+            setTags={setTags}
+            expiryHours={expiryHours}
+            setExpiryHours={setExpiryHours}
+          />
 
           {/* Markdown 描述区域 */}
           <MarkdownEditor
@@ -205,7 +177,7 @@ const CreateSnippetPage: React.FC = () => {
             onSubmit={handleSubmit}
             loading={loading}
           />
-        </Form>
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,11 @@
 
 import React, { useState, useCallback } from 'react';
-import { Card, Radio, Input, Button, Space } from 'antd';
-import { ReloadOutlined, LockOutlined, GlobalOutlined } from '@ant-design/icons';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { RotateCcw, Lock, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ActionsProps {
@@ -55,26 +59,29 @@ const Actions: React.FC<ActionsProps> = ({
 
   return (
     <Card className="sticky bottom-0 bg-white shadow-lg border-t-2 border-blue-100">
-      <div className="space-y-4">
+      <CardHeader>
+        <CardTitle>操作设置</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
         {/* 可见性设置 */}
         <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-3">代码片段可见性</h4>
-          <Radio.Group
-            value={visibility}
-            onChange={(e) => onVisibilityChange(e.target.value)}
-            optionType="button"
-            buttonStyle="solid"
-            size="large"
-          >
-            <Radio.Button value="public" className="flex items-center">
-              <GlobalOutlined className="mr-2" />
-              公开分享
-            </Radio.Button>
-            <Radio.Button value="private" className="flex items-center">
-              <LockOutlined className="mr-2" />
-              加密分享
-            </Radio.Button>
-          </Radio.Group>
+          <Label className="text-sm font-medium text-gray-700 mb-3 block">代码片段可见性</Label>
+          <RadioGroup value={visibility} onValueChange={onVisibilityChange} className="flex gap-4">
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="public" id="public" />
+              <Label htmlFor="public" className="flex items-center cursor-pointer">
+                <Globe className="mr-2 h-4 w-4" />
+                公开分享
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="private" id="private" />
+              <Label htmlFor="private" className="flex items-center cursor-pointer">
+                <Lock className="mr-2 h-4 w-4" />
+                加密分享
+              </Label>
+            </div>
+          </RadioGroup>
         </div>
 
         {/* 密码输入框 - 带动画 */}
@@ -94,23 +101,25 @@ const Actions: React.FC<ActionsProps> = ({
                 <p className="text-xs text-yellow-600 mb-3">
                   其他人需要输入正确密码才能查看此代码片段
                 </p>
-                <Input.Password
-                  value={password}
-                  onChange={(e) => onPasswordChange(e.target.value)}
-                  placeholder="输入6位以上密码"
-                  size="large"
-                  maxLength={20}
-                  addonAfter={
-                    <Button
-                      type="text"
-                      icon={<ReloadOutlined />}
-                      onClick={generateRandomPassword}
-                      title="生成随机密码"
-                      className="border-0 shadow-none hover:bg-gray-100"
-                    />
-                  }
-                  className="font-mono"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(e) => onPasswordChange(e.target.value)}
+                    placeholder="输入6位以上密码"
+                    maxLength={20}
+                    className="font-mono flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={generateRandomPassword}
+                    title="生成随机密码"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                  </Button>
+                </div>
                 {password && password.length < 6 && (
                   <p className="text-xs text-red-500 mt-1">
                     密码长度至少需要6位字符
@@ -122,23 +131,20 @@ const Actions: React.FC<ActionsProps> = ({
         </AnimatePresence>
 
         {/* 提交按钮 */}
-        <div className="flex justify-end pt-4 border-t">
-          <Space>
-            <Button size="large" disabled={loading}>
-              保存草稿
-            </Button>
-            <Button
-              type="primary"
-              size="large"
-              onClick={onSubmit}
-              loading={loading}
-              className="min-w-[120px]"
-            >
-              {loading ? '创建中...' : '创建代码片段'}
-            </Button>
-          </Space>
+        <div className="flex justify-end pt-4 border-t gap-2">
+          <Button variant="outline" size="lg" disabled={loading}>
+            保存草稿
+          </Button>
+          <Button
+            onClick={onSubmit}
+            disabled={loading}
+            size="lg"
+            className="min-w-[120px]"
+          >
+            {loading ? '创建中...' : '创建代码片段'}
+          </Button>
         </div>
-      </div>
+      </CardContent>
     </Card>
   );
 };

@@ -1,10 +1,10 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { Card, Input } from 'antd';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-
-const { TextArea } = Input;
 
 interface MarkdownEditorProps {
   value: string;
@@ -61,26 +61,27 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ value, onChange }) => {
   }), []);
 
   return (
-    <Card 
-      title="描述 (支持 Markdown)"
-      className="mb-6"
-      extra={
-        <button
-          type="button"
-          onClick={() => setIsPreviewMode(!isPreviewMode)}
-          className="text-sm text-blue-500 hover:text-blue-700 transition-colors"
-        >
-          {isPreviewMode ? '编辑模式' : '预览模式'}
-        </button>
-      }
-    >
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-[300px]">
-        {/* 编辑区域 */}
-        <div className={`${isPreviewMode ? 'hidden lg:block' : ''}`}>
-          <TextArea
-            value={value}
-            onChange={handleChange}
-            placeholder={`支持 Markdown 语法，例如：
+    <Card className="mb-6">
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <CardTitle>描述 (支持 Markdown)</CardTitle>
+          <Button
+            variant="outline"
+            onClick={() => setIsPreviewMode(!isPreviewMode)}
+            className="text-sm"
+          >
+            {isPreviewMode ? '编辑模式' : '预览模式'}
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-[300px]">
+          {/* 编辑区域 */}
+          <div className={`${isPreviewMode ? 'hidden lg:block' : ''}`}>
+            <Textarea
+              value={value}
+              onChange={handleChange}
+              placeholder={`支持 Markdown 语法，例如：
 
 # 这是标题
 这是普通文本段落。
@@ -99,31 +100,32 @@ function hello() {
 
 > 这是引用块
 `}
-            rows={12}
-            className="resize-none"
-            showCount
-            maxLength={5000}
-          />
-        </div>
+              className="resize-none h-[300px]"
+            />
+            <div className="text-sm text-gray-500 mt-2">
+              {value.length}/5000 字符
+            </div>
+          </div>
 
-        {/* 预览区域 */}
-        <div className={`border rounded-lg p-4 bg-gray-50 overflow-y-auto max-h-[300px] ${!isPreviewMode ? 'hidden lg:block' : ''}`}>
-          {value ? (
-            <div className="prose prose-sm max-w-none">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={markdownComponents}
-              >
-                {value}
-              </ReactMarkdown>
-            </div>
-          ) : (
-            <div className="text-gray-400 italic text-center py-8">
-              在左侧输入 Markdown 内容，这里将显示预览效果
-            </div>
-          )}
+          {/* 预览区域 */}
+          <div className={`border rounded-lg p-4 bg-gray-50 overflow-y-auto h-[300px] ${!isPreviewMode ? 'hidden lg:block' : ''}`}>
+            {value ? (
+              <div className="prose prose-sm max-w-none">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={markdownComponents}
+                >
+                  {value}
+                </ReactMarkdown>
+              </div>
+            ) : (
+              <div className="text-gray-400 italic text-center py-8">
+                在左侧输入 Markdown 内容，这里将显示预览效果
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </CardContent>
     </Card>
   );
 };

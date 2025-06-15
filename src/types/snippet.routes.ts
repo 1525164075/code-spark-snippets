@@ -1,70 +1,120 @@
 
-// Koa Router 路由定义示例（用于后端实现参考）
-import Router from 'koa-router';
-import { CreateSnippetRequest, CreateSnippetResponse, VerifyPasswordRequest, VerifyPasswordResponse } from './CodeSnippet';
+// API 路由定义和接口类型
+import { ICodeSnippet, CreateSnippetRequest, CreateSnippetResponse } from './CodeSnippet';
 
-const router = new Router({ prefix: '/api/snippets' });
+// API 端点路径常量
+export const API_ENDPOINTS = {
+  SNIPPETS: '/api/snippets',
+  SNIPPET_BY_ID: (id: string) => `/api/snippets/${id}`,
+  VERIFY_PASSWORD: (id: string) => `/api/snippets/${id}/verify`,
+} as const;
 
-// POST / - 创建新代码片段
-router.post('/', async (ctx) => {
-  const data: CreateSnippetRequest = ctx.request.body;
+// 路由处理器接口定义
+export interface SnippetRouteHandlers {
+  // POST /api/snippets - 创建新的代码片段
+  createSnippet: (request: CreateSnippetRequest) => Promise<CreateSnippetResponse>;
   
-  // 实现逻辑：
-  // 1. 验证请求数据
-  // 2. 创建新的 CodeSnippet 文档
-  // 3. 保存到数据库
-  // 4. 返回响应
+  // GET /api/snippets/:id - 获取单个代码片段
+  getSnippetById: (id: string) => Promise<ICodeSnippet>;
   
-  const response: CreateSnippetResponse = {
-    id: 'generated_snippet_id',
-    url: `/share/generated_snippet_id`
-  };
+  // PUT /api/snippets/:id - 更新代码片段
+  updateSnippet: (id: string, request: Partial<CreateSnippetRequest>) => Promise<ICodeSnippet>;
   
-  ctx.status = 201;
-  ctx.body = response;
-});
+  // POST /api/snippets/:id/verify - 验证私有片段的密码
+  verifyPassword: (id: string, password: string) => Promise<{
+    access: 'granted' | 'denied';
+    data?: ICodeSnippet;
+    message?: string;
+  }>;
+  
+  // DELETE /api/snippets/:id - 删除代码片段
+  deleteSnippet: (id: string) => Promise<{ success: boolean }>;
+}
 
-// GET /:id - 获取单个代码片段
-router.get('/:id', async (ctx) => {
-  const { id } = ctx.params;
-  
-  // 实现逻辑：
-  // 1. 根据 ID 查找代码片段
-  // 2. 检查可见性和过期时间
-  // 3. 返回数据或要求密码验证
-  
-  ctx.body = { /* snippet data */ };
-});
+// HTTP 状态码
+export const HTTP_STATUS = {
+  OK: 200,
+  CREATED: 201,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  NOT_FOUND: 404,
+  INTERNAL_SERVER_ERROR: 500,
+} as const;
 
-// PUT /:id - 更新代码片段
-router.put('/:id', async (ctx) => {
-  const { id } = ctx.params;
-  const data: Partial<CreateSnippetRequest> = ctx.request.body;
-  
-  // 实现逻辑：
-  // 1. 查找并验证权限
-  // 2. 更新代码片段
-  // 3. 返回更新后的数据
-  
-  ctx.body = { /* updated snippet data */ };
-});
+// 错误响应接口
+export interface ErrorResponse {
+  error: string;
+  message: string;
+  statusCode: number;
+}
 
-// POST /:id/verify - 验证私有片段密码
-router.post('/:id/verify', async (ctx) => {
-  const { id } = ctx.params;
-  const { password }: VerifyPasswordRequest = ctx.request.body;
-  
-  // 实现逻辑：
-  // 1. 查找代码片段
-  // 2. 验证密码
-  // 3. 返回验证结果
-  
-  const response: VerifyPasswordResponse = {
-    access: 'granted', // or 'denied'
-    data: {/* snippet data if granted */}
-  };
-  
-  ctx.body = response;
-});
+// 成功响应接口
+export interface SuccessResponse<T = any> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
 
-export default router;
+// 模拟的后端实现示例（仅供参考）
+export class MockSnippetService implements SnippetRouteHandlers {
+  private snippets: Map<string, ICodeSnippet> = new Map();
+
+  async createSnippet(request: CreateSnippetRequest): Promise<CreateSnippetResponse> {
+    const id = 'snippet_' + Date.now();
+    const snippet: ICodeSnippet = {
+      _id: id,
+      ...request,
+      createdAt: new Date(),
+    };
+    
+    this.snippets.set(id, snippet);
+    
+    return {
+      id,
+      url: `/share/${id}`
+    };
+  }
+
+  async getSnippetById(id: string): Promise<ICodeSnippet> {
+    const snippet = this.snippets.get(id);
+    if (!snippet) {
+      throw new Error('Snippet not found');
+    }
+    return snippet;
+  }
+
+  async updateSnippet(id: string, request: Partial<CreateSnippetRequest>): Promise<ICodeSnippet> {
+    const snippet = this.snippets.get(id);
+    if (!snippet) {
+      throw new Error('Snippet not found');
+    }
+    
+    const updatedSnippet = { ...snippet, ...request };
+    this.snippets.set(id, updatedSnippet);
+    return updatedSnippet;
+  }
+
+  async verifyPassword(id: string, password: string) {
+    const snippet = this.snippets.get(id);
+    if (!snippet) {
+      throw new Error('Snippet not found');
+    }
+    
+    if (snippet.visibility === 'private' && snippet.password === password) {
+      return {
+        access: 'granted' as const,
+        data: snippet
+      };
+    }
+    
+    return {
+      access: 'denied' as const,
+      message: '密码错误'
+    };
+  }
+
+  async deleteSnippet(id: string): Promise<{ success: boolean }> {
+    const deleted = this.snippets.delete(id);
+    return { success: deleted };
+  }
+}
