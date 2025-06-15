@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,11 +13,11 @@ import { Search, Plus, Calendar, Code, Tag, Eye } from 'lucide-react';
 import { ICodeSnippet } from '../types/CodeSnippet';
 import CodePreviewModal from '../components/CodePreviewModal';
 
-// 模拟 API 调用函数
+// Mock API call function
 const fetchSnippets = async (): Promise<ICodeSnippet[]> => {
   console.log('Fetching snippets list...');
   
-  // 模拟网络延迟
+  // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 1000));
   
   // 模拟数据
@@ -104,13 +105,14 @@ const fetchSnippets = async (): Promise<ICodeSnippet[]> => {
 const SnippetListPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
   const [previewSnippet, setPreviewSnippet] = useState<ICodeSnippet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // 使用 useQuery 来获取数据
+  // Use useQuery to fetch data
   const { 
     data: snippets = [], 
     isLoading, 
@@ -121,7 +123,7 @@ const SnippetListPage: React.FC = () => {
     queryFn: fetchSnippets
   });
 
-  // 使用 useEffect 来处理错误
+  // Handle errors with useEffect
   useEffect(() => {
     if (isError && error) {
       console.error('Failed to fetch snippets:', error);
@@ -141,7 +143,6 @@ const SnippetListPage: React.FC = () => {
       snippet.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
-    // 排序逻辑
     filtered.sort((a, b) => {
       if (sortBy === 'createdAt') {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -154,7 +155,6 @@ const SnippetListPage: React.FC = () => {
     return filtered;
   }, [snippets, searchTerm, sortBy]);
 
-  // 处理预览
   const handlePreview = (snippet: ICodeSnippet) => {
     setPreviewSnippet(snippet);
     setIsModalOpen(true);
@@ -163,11 +163,11 @@ const SnippetListPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-              <p className="text-gray-600">正在加载代码片段...</p>
+              <p className="text-gray-600">{t('common.loading')}</p>
             </div>
           </div>
         </div>
@@ -178,12 +178,12 @@ const SnippetListPage: React.FC = () => {
   if (isError) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <p className="text-red-600">加载失败，请稍后重试</p>
               <Button onClick={() => window.location.reload()} className="mt-4">
-                重新加载
+                {t('common.retry')}
               </Button>
             </div>
           </div>
@@ -194,124 +194,124 @@ const SnippetListPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 头部 */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">代码片段</h1>
-              <p className="mt-1 text-sm text-gray-500">
-                发现和分享有用的代码片段
-              </p>
-            </div>
-            <Button onClick={() => navigate('/create')} className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              创建代码片段
+      {/* Apple-inspired header */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center">
+            <h1 className="apple-title mb-4">{t('snippets.title')}</h1>
+            <p className="apple-subtitle mb-8">
+              {t('snippets.subtitle')}
+            </p>
+            <Button onClick={() => navigate('/create')} size="lg" className="rounded-full px-8">
+              <Plus className="h-5 w-5 mr-2" />
+              {t('nav.create')}
             </Button>
           </div>
         </div>
       </div>
 
-      {/* 主内容区 */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 搜索和过滤 */}
+      {/* Main content */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Search and filter */}
         <div className="mb-8 flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="搜索代码片段、标签或描述..."
+              placeholder={t('snippets.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 rounded-xl"
             />
           </div>
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder="排序方式" />
+            <SelectTrigger className="w-full sm:w-48 rounded-xl">
+              <SelectValue placeholder={t('snippets.sortBy')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="createdAt">最新创建</SelectItem>
-              <SelectItem value="title">标题排序</SelectItem>
+              <SelectItem value="createdAt">{t('snippets.sortNewest')}</SelectItem>
+              <SelectItem value="title">{t('snippets.sortTitle')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {/* 代码片段列表 */}
+        {/* Apple-inspired single column list */}
         {filteredAndSortedSnippets.length === 0 ? (
-          <div className="text-center py-12">
-            <Code className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">没有找到代码片段</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              {searchTerm ? '尝试使用不同的搜索词' : '开始创建你的第一个代码片段吧'}
+          <div className="text-center py-16">
+            <Code className="mx-auto h-16 w-16 text-gray-300 mb-6" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('snippets.noSnippets')}</h3>
+            <p className="text-gray-600 mb-8">
+              {searchTerm ? t('snippets.tryDifferent') : t('snippets.createFirst')}
             </p>
             {!searchTerm && (
-              <div className="mt-6">
-                <Button onClick={() => navigate('/create')}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  创建代码片段
-                </Button>
-              </div>
+              <Button onClick={() => navigate('/create')} size="lg" className="rounded-full">
+                <Plus className="h-5 w-5 mr-2" />
+                {t('nav.create')}
+              </Button>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-6">
             {filteredAndSortedSnippets.map((snippet) => (
-              <Card key={snippet._id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg">
+              <div key={snippet._id} className="apple-card">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
                     <Link
                       to={`/share/${snippet._id}`}
-                      className="text-blue-600 hover:text-blue-800 hover:underline"
+                      className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors"
                     >
                       {snippet.title}
                     </Link>
-                  </CardTitle>
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {snippet.tags.slice(0, 3).map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                    {snippet.tags.length > 3 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{snippet.tags.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-                    {snippet.description.replace(/[#*`]/g, '').substring(0, 120)}...
-                  </p>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center justify-between text-xs text-gray-500 flex-1">
+                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
                       <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
+                        <Calendar className="h-4 w-4" />
                         {new Date(snippet.createdAt).toLocaleDateString('zh-CN')}
                       </div>
                       <div className="flex items-center gap-1">
-                        <Code className="h-3 w-3" />
-                        {snippet.files.length} 个文件
+                        <Code className="h-4 w-4" />
+                        {snippet.files.length} {t('snippets.files')}
                       </div>
+                      <Badge variant={snippet.visibility === 'public' ? "default" : "destructive"} className="text-xs">
+                        {snippet.visibility === 'public' ? t('snippets.public') : t('snippets.private')}
+                      </Badge>
                     </div>
                   </div>
+                </div>
+                
+                <p className="text-gray-700 mb-4 leading-relaxed">
+                  {snippet.description.replace(/[#*`]/g, '').substring(0, 150)}...
+                </p>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap gap-2">
+                    {snippet.tags.slice(0, 4).map((tag) => (
+                      <Badge key={tag} variant="secondary" className="text-xs rounded-full">
+                        {tag}
+                      </Badge>
+                    ))}
+                    {snippet.tags.length > 4 && (
+                      <Badge variant="outline" className="text-xs rounded-full">
+                        +{snippet.tags.length - 4}
+                      </Badge>
+                    )}
+                  </div>
+                  
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full"
+                    className="rounded-full"
                     onClick={() => handlePreview(snippet)}
                   >
                     <Eye className="h-4 w-4 mr-2" />
-                    预览代码
+                    {t('snippets.preview')}
                   </Button>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* 代码预览模态框 */}
+      {/* Code preview modal */}
       <CodePreviewModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}

@@ -1,0 +1,51 @@
+
+{
+  "nav": {
+    "home": "Home",
+    "create": "Create Snippet",
+    "explore": "Code Square",
+    "profile": "Profile",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "mySnippets": "My Snippets"
+  },
+  "home": {
+    "title": "CodeSnip",
+    "subtitle": "Share your code, spread knowledge further",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More"
+  },
+  "snippets": {
+    "title": "Code Snippets",
+    "subtitle": "Discover and share useful code snippets",
+    "searchPlaceholder": "Search snippets, tags or descriptions...",
+    "sortBy": "Sort by",
+    "sortNewest": "Newest",
+    "sortTitle": "Title",
+    "noSnippets": "No code snippets found",
+    "tryDifferent": "Try using different search terms",
+    "createFirst": "Start creating your first code snippet",
+    "preview": "Preview Code",
+    "files": "files",
+    "public": "Public",
+    "private": "Private"
+  },
+  "create": {
+    "title": "Create Code Snippet",
+    "subtitle": "Share your code, let knowledge spread further",
+    "success": "Created successfully!",
+    "successDesc": "Your code snippet has been created successfully"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error occurred",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "create": "Create"
+  }
+}

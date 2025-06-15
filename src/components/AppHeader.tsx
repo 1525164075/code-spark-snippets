@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -12,10 +13,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
 import { Code2, Plus, List, LogOut, User } from 'lucide-react';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const AppHeader = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSignOut = async () => {
     await signOut();
@@ -41,35 +44,37 @@ const AppHeader = () => {
   return (
     <header className="border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        {/* 左侧 Logo */}
+        {/* Logo */}
         <NavLink to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
           <Code2 className="h-8 w-8 text-blue-600" />
           <span className="text-xl font-bold text-gray-900">CodeSnip</span>
         </NavLink>
 
-        {/* 中间导航链接 */}
+        {/* Navigation */}
         <nav className="hidden md:flex items-center space-x-1">
           <NavLink to="/" className={navLinkClassName}>
-            首页
+            {t('nav.home')}
           </NavLink>
           <NavLink to="/snippets" className={navLinkClassName}>
-            代码广场
+            {t('nav.explore')}
           </NavLink>
           {user && (
             <NavLink to="/create" className={navLinkClassName}>
-              创建代码
+              {t('nav.create')}
             </NavLink>
           )}
         </nav>
 
-        {/* 右侧操作区 */}
+        {/* Right actions */}
         <div className="flex items-center space-x-4">
+          <LanguageSwitcher />
+          
           {user ? (
             <div className="flex items-center space-x-3">
               <Button asChild variant="outline" size="sm">
                 <NavLink to="/create">
                   <Plus className="h-4 w-4 mr-1" />
-                  创建
+                  {t('nav.create')}
                 </NavLink>
               </Button>
               
@@ -99,19 +104,19 @@ const AppHeader = () => {
                   <DropdownMenuItem asChild>
                     <NavLink to="/snippets" className="cursor-pointer">
                       <List className="mr-2 h-4 w-4" />
-                      我的代码片段
+                      {t('nav.mySnippets')}
                     </NavLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <NavLink to="/profile" className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
-                      个人资料
+                      {t('nav.profile')}
                     </NavLink>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
-                    退出登录
+                    {t('nav.logout')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -119,10 +124,10 @@ const AppHeader = () => {
           ) : (
             <div className="flex items-center space-x-3">
               <Button asChild variant="ghost">
-                <NavLink to="/login">登录</NavLink>
+                <NavLink to="/login">{t('nav.login')}</NavLink>
               </Button>
               <Button asChild>
-                <NavLink to="/register">注册</NavLink>
+                <NavLink to="/register">{t('nav.register')}</NavLink>
               </Button>
             </div>
           )}

@@ -1,21 +1,21 @@
-
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 import CodeEditorBlock from '../components/CodeEditorBlock';
 import SettingsPanel from '../components/SettingsPanel';
 import MarkdownEditorPanel from '../components/MarkdownEditorPanel';
 import { ICodeFile, CreateSnippetRequest } from '../types/CodeSnippet';
 
-// 模拟创建代码片段的 API 函数
+// Mock API function for creating code snippets
 const createSnippet = async (data: CreateSnippetRequest): Promise<any> => {
   console.log('Creating code snippet with data:', data);
   
-  // 模拟网络延迟
+  // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 2000));
   
-  // 模拟成功响应
+  // Simulate success response
   return {
     id: 'snippet-' + Date.now(),
     ...data,
@@ -26,9 +26,10 @@ const createSnippet = async (data: CreateSnippetRequest): Promise<any> => {
 const CreateSnippetPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   
-  // 核心状态管理
+  // Core state management
   const [files, setFiles] = useState<ICodeFile[]>([
     {
       filename: '代码一',
@@ -44,16 +45,16 @@ const CreateSnippetPage: React.FC = () => {
   const [visibility, setVisibility] = useState<'public' | 'private'>('public');
   const [password, setPassword] = useState<string>('');
 
-  // 使用 useMutation 来处理创建代码片段
+  // Use useMutation to handle snippet creation
   const mutation = useMutation({
     mutationFn: createSnippet,
     onSuccess: () => {
-      // 关键！让 'snippets' 查询失效，触发自动重新获取
+      // Key fix: Invalidate the 'snippets' query to trigger automatic refetch
       queryClient.invalidateQueries({ queryKey: ['snippets'] });
       
       toast({
-        title: "创建成功！",
-        description: `你的代码片段已成功创建`,
+        title: t('create.success'),
+        description: t('create.successDesc'),
       });
 
       setTimeout(() => {
@@ -70,9 +71,9 @@ const CreateSnippetPage: React.FC = () => {
     }
   });
 
-  // 提交处理函数
+  // Submit handling function
   const handleSubmit = useCallback(async () => {
-    // 验证输入
+    // Validation
     if (!title.trim()) {
       toast({
         title: "错误",
@@ -97,7 +98,7 @@ const CreateSnippetPage: React.FC = () => {
       if (!confirmContinue) return;
     }
 
-    // 验证私有片段密码
+    // Validate private snippet password
     if (visibility === 'private' && password.length < 6) {
       toast({
         title: "错误",
@@ -107,7 +108,7 @@ const CreateSnippetPage: React.FC = () => {
       return;
     }
 
-    // 构建请求数据
+    // Build request data
     const requestData: CreateSnippetRequest = {
       title: title.trim(),
       files: files,
@@ -118,16 +119,16 @@ const CreateSnippetPage: React.FC = () => {
       expiresAt: expiryDate || undefined,
     };
 
-    // 执行创建
+    // Execute creation
     mutation.mutate(requestData);
   }, [title, files, description, tags, visibility, password, expiryDate, mutation, toast]);
 
-  // 文件变化处理
+  // File change handling
   const handleFilesChange = useCallback((newFiles: ICodeFile[]) => {
     setFiles(newFiles);
   }, []);
 
-  // 可见性变化处理
+  // Visibility change handling
   const handleVisibilityChange = useCallback((newVisibility: 'public' | 'private') => {
     setVisibility(newVisibility);
     if (newVisibility === 'public') {
@@ -137,14 +138,14 @@ const CreateSnippetPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 头部 */}
+      {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">创建代码片段</h1>
+              <h1 className="apple-title">{t('create.title')}</h1>
               <p className="mt-1 text-sm text-gray-500">
-                分享你的代码，让知识传播得更远
+                {t('create.subtitle')}
               </p>
             </div>
             <div className="text-sm text-gray-400">
@@ -154,25 +155,25 @@ const CreateSnippetPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 主内容区 - 双列布局 */}
+      {/* Main content - dual column layout */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* 左侧列 - 主内容创作区 */}
+          {/* Left column - main content creation area */}
           <div className="lg:col-span-2 space-y-6">
-            {/* 代码编辑器区域 */}
+            {/* Code editor area */}
             <CodeEditorBlock
               files={files}
               onFilesChange={handleFilesChange}
             />
 
-            {/* Markdown 描述区域 */}
+            {/* Markdown description area */}
             <MarkdownEditorPanel
               value={description}
               onChange={setDescription}
             />
           </div>
 
-          {/* 右侧列 - 配置与操作区 */}
+          {/* Right column - configuration and action area */}
           <div className="lg:col-span-1">
             <SettingsPanel
               title={title}

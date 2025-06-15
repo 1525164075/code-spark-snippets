@@ -1,0 +1,51 @@
+
+{
+  "nav": {
+    "home": "首页",
+    "create": "创建代码",
+    "explore": "代码广场",
+    "profile": "个人资料",
+    "login": "登录",
+    "register": "注册",
+    "logout": "退出登录",
+    "mySnippets": "我的代码片段"
+  },
+  "home": {
+    "title": "CodeSnip",
+    "subtitle": "分享你的代码，让知识传播得更远",
+    "getStarted": "开始使用",
+    "learnMore": "了解更多"
+  },
+  "snippets": {
+    "title": "代码片段",
+    "subtitle": "发现和分享有用的代码片段",
+    "searchPlaceholder": "搜索代码片段、标签或描述...",
+    "sortBy": "排序方式",
+    "sortNewest": "最新创建",
+    "sortTitle": "标题排序",
+    "noSnippets": "没有找到代码片段",
+    "tryDifferent": "尝试使用不同的搜索词",
+    "createFirst": "开始创建你的第一个代码片段吧",
+    "preview": "预览代码",
+    "files": "个文件",
+    "public": "公开",
+    "private": "私有"
+  },
+  "create": {
+    "title": "创建代码片段",
+    "subtitle": "分享你的代码，让知识传播得更远",
+    "success": "创建成功！",
+    "successDesc": "你的代码片段已成功创建"
+  },
+  "common": {
+    "loading": "正在加载...",
+    "error": "发生错误",
+    "retry": "重试",
+    "cancel": "取消",
+    "confirm": "确认",
+    "delete": "删除",
+    "edit": "编辑",
+    "view": "查看",
+    "create": "创建"
+  }
+}
