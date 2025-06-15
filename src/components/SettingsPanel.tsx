@@ -195,7 +195,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
       {/* 操作按钮 */}
       <Button 
         onClick={onSubmit} 
-        loading={loading}
+        disabled={loading}
         className="w-full"
         size="lg"
       >

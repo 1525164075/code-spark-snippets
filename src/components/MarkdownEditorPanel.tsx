@@ -25,7 +25,7 @@ const MarkdownEditorPanel: React.FC<MarkdownEditorPanelProps> = ({ value, onChan
             onChange={handleChange}
             preview="edit"
             hideToolbar={false}
-            visibleDragBar={false}
+            visibleDragbar={false}
             textareaProps={{
               placeholder: `支持 Markdown 语法，例如：
 
