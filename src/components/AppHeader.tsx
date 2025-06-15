@@ -35,23 +35,23 @@ const AppHeader = () => {
   };
 
   const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
-    `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+    `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
       isActive 
-        ? 'bg-blue-100 text-blue-700 font-semibold' 
+        ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm' 
         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
     }`;
 
   return (
-    <header className="border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
+    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
-        <NavLink to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+        <NavLink to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
           <Code2 className="h-8 w-8 text-blue-600" />
-          <span className="text-xl font-bold text-gray-900">CodeSnip</span>
+          <span className="text-xl font-bold text-gray-900 tracking-tight">CodeSnip</span>
         </NavLink>
 
         {/* Navigation */}
-        <nav className="hidden md:flex items-center space-x-1">
+        <nav className="hidden md:flex items-center space-x-2">
           <NavLink to="/" className={navLinkClassName}>
             {t('nav.home')}
           </NavLink>
@@ -71,18 +71,18 @@ const AppHeader = () => {
           
           {user ? (
             <div className="flex items-center space-x-3">
-              <Button asChild variant="outline" size="sm">
+              <Button asChild size="sm" className="rounded-full font-medium">
                 <NavLink to="/create">
-                  <Plus className="h-4 w-4 mr-1" />
+                  <Plus className="h-4 w-4 mr-2" />
                   {t('nav.create')}
                 </NavLink>
               </Button>
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-gray-100 transition-colors">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback>
+                      <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
                         {user.user_metadata?.full_name 
                           ? getInitials(user.user_metadata.full_name)
                           : user.email?.[0]?.toUpperCase() || 'U'
@@ -123,10 +123,10 @@ const AppHeader = () => {
             </div>
           ) : (
             <div className="flex items-center space-x-3">
-              <Button asChild variant="ghost">
+              <Button asChild variant="ghost" className="font-medium">
                 <NavLink to="/login">{t('nav.login')}</NavLink>
               </Button>
-              <Button asChild>
+              <Button asChild className="rounded-full font-medium">
                 <NavLink to="/register">{t('nav.register')}</NavLink>
               </Button>
             </div>

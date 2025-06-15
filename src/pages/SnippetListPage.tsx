@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -9,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Plus, Calendar, Code, Tag, Eye } from 'lucide-react';
+import { Search, Plus, Calendar, Code, Tag, Eye, ChevronDown } from 'lucide-react';
 import { ICodeSnippet } from '../types/CodeSnippet';
 import CodePreviewModal from '../components/CodePreviewModal';
 
@@ -111,8 +110,9 @@ const SnippetListPage: React.FC = () => {
   const [sortBy, setSortBy] = useState('createdAt');
   const [previewSnippet, setPreviewSnippet] = useState<ICodeSnippet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
-  // Use useQuery to fetch data
+  // Use useQuery to fetch data with the correct queryKey that matches the invalidation
   const { 
     data: snippets = [], 
     isLoading, 
@@ -160,9 +160,21 @@ const SnippetListPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const toggleExpanded = (snippetId: string) => {
+    setExpandedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(snippetId)) {
+        newSet.delete(snippetId);
+      } else {
+        newSet.add(snippetId);
+      }
+      return newSet;
+    });
+  };
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 pt-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -177,7 +189,7 @@ const SnippetListPage: React.FC = () => {
 
   if (isError) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 pt-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -193,16 +205,16 @@ const SnippetListPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-16">
       {/* Apple-inspired header */}
-      <div className="bg-white border-b border-gray-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="bg-white/80 backdrop-blur-xl border-b border-gray-200/50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
             <h1 className="apple-title mb-4">{t('snippets.title')}</h1>
             <p className="apple-subtitle mb-8">
               {t('snippets.subtitle')}
             </p>
-            <Button onClick={() => navigate('/create')} size="lg" className="rounded-full px-8">
+            <Button onClick={() => navigate('/create')} size="lg" className="rounded-full px-8 font-medium">
               <Plus className="h-5 w-5 mr-2" />
               {t('nav.create')}
             </Button>
@@ -220,11 +232,11 @@ const SnippetListPage: React.FC = () => {
               placeholder={t('snippets.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 rounded-xl"
+              className="pl-10 rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-full sm:w-48 rounded-xl">
+            <SelectTrigger className="w-full sm:w-48 rounded-xl border-gray-300">
               <SelectValue placeholder={t('snippets.sortBy')} />
             </SelectTrigger>
             <SelectContent>
@@ -252,7 +264,10 @@ const SnippetListPage: React.FC = () => {
         ) : (
           <div className="space-y-6">
             {filteredAndSortedSnippets.map((snippet) => (
-              <div key={snippet._id} className="apple-card">
+              <div 
+                key={snippet._id} 
+                className="bg-white/90 backdrop-blur-sm hover:bg-white border border-gray-200 rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+              >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <Link
@@ -275,11 +290,38 @@ const SnippetListPage: React.FC = () => {
                       </Badge>
                     </div>
                   </div>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="rounded-full"
+                    onClick={() => toggleExpanded(snippet._id)}
+                  >
+                    <ChevronDown 
+                      className={`h-4 w-4 transition-transform ${
+                        expandedItems.has(snippet._id) ? 'rotate-180' : ''
+                      }`} 
+                    />
+                  </Button>
                 </div>
                 
                 <p className="text-gray-700 mb-4 leading-relaxed">
                   {snippet.description.replace(/[#*`]/g, '').substring(0, 150)}...
                 </p>
+
+                {/* Expandable code preview */}
+                {expandedItems.has(snippet._id) && (
+                  <div className="mb-4 border rounded-lg overflow-hidden bg-gray-50">
+                    <div className="bg-gray-100 px-4 py-2 border-b">
+                      <span className="font-medium text-sm">{snippet.files[0]?.filename}</span>
+                    </div>
+                    <div className="p-4">
+                      <pre className="apple-mono text-sm text-gray-800 overflow-x-auto">
+                        <code>{snippet.files[0]?.content.substring(0, 500)}...</code>
+                      </pre>
+                    </div>
+                  </div>
+                )}
                 
                 <div className="flex items-center justify-between">
                   <div className="flex flex-wrap gap-2">

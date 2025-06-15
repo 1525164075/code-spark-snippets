@@ -138,28 +138,23 @@ const CreateSnippetPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      {/* Apple-inspired header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="apple-title">{t('create.title')}</h1>
-              <p className="mt-1 text-sm text-gray-500">
-                {t('create.subtitle')}
-              </p>
-            </div>
-            <div className="text-sm text-gray-400">
-              CodeSnip v1.0
-            </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <h1 className="apple-title">{t('create.title')}</h1>
+            <p className="apple-subtitle mt-2">
+              {t('create.subtitle')}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Main content - dual column layout */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left column - main content creation area */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-8">
             {/* Code editor area */}
             <CodeEditorBlock
               files={files}
