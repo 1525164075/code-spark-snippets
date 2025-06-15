@@ -2,10 +2,10 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { Row, Col } from 'antd';
 import CodeEditorBlock from '../components/CodeEditorBlock';
-import MoreSettings from '../components/MoreSettings';
-import MarkdownEditor from '../components/MarkdownEditor';
-import Actions from '../components/Actions';
+import SettingsPanel from '../components/SettingsPanel';
+import MarkdownEditorPanel from '../components/MarkdownEditorPanel';
 import { ICodeFile, ICodeSnippet, CreateSnippetRequest } from '../types/CodeSnippet';
 
 const CreateSnippetPage: React.FC = () => {
@@ -23,13 +23,13 @@ const CreateSnippetPage: React.FC = () => {
   
   const [title, setTitle] = useState<string>('');
   const [tags, setTags] = useState<string[]>([]);
-  const [expiryHours, setExpiryHours] = useState<number | null>(null);
+  const [expiryDate, setExpiryDate] = useState<Date | null>(null);
   const [description, setDescription] = useState<string>('');
   const [visibility, setVisibility] = useState<'public' | 'private'>('public');
   const [password, setPassword] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 
-  // 提交处理函数 - 更新后的逻辑
+  // 提交处理函数
   const handleSubmit = useCallback(async () => {
     try {
       // 验证输入
@@ -53,7 +53,6 @@ const CreateSnippetPage: React.FC = () => {
 
       const hasEmptyFiles = files.some(file => !file.content.trim());
       if (hasEmptyFiles) {
-        // 简化的确认逻辑
         const confirmContinue = window.confirm('某些代码文件内容为空，确定要继续创建吗？');
         if (!confirmContinue) return;
       }
@@ -78,28 +77,19 @@ const CreateSnippetPage: React.FC = () => {
         tags: tags,
         visibility: visibility,
         password: visibility === 'private' ? password : undefined,
-        expiresAt: expiryHours ? 
-          new Date(Date.now() + expiryHours * 60 * 60 * 1000) : 
-          undefined,
+        expiresAt: expiryDate || undefined,
       };
 
       console.log('Creating code snippet with data:', requestData);
 
-      // 模拟 API 调用 POST /api/snippets
+      // 模拟 API 调用
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      const mockResponse = {
-        id: 'snippet_' + Date.now(),
-        url: `/share/snippet_${Date.now()}`
-      };
-
-      // 成功提示
       toast({
         title: "创建成功！",
         description: `你的代码片段已成功创建`,
       });
 
-      // 1秒后导航到代码列表页
       setTimeout(() => {
         navigate('/snippets');
       }, 1000);
@@ -114,7 +104,7 @@ const CreateSnippetPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [title, files, description, tags, visibility, password, expiryHours, toast, navigate]);
+  }, [title, files, description, tags, visibility, password, expiryDate, toast, navigate]);
 
   // 文件变化处理
   const handleFilesChange = useCallback((newFiles: ICodeFile[]) => {
@@ -125,7 +115,7 @@ const CreateSnippetPage: React.FC = () => {
   const handleVisibilityChange = useCallback((newVisibility: 'public' | 'private') => {
     setVisibility(newVisibility);
     if (newVisibility === 'public') {
-      setPassword(''); // 切换到公开时清空密码
+      setPassword('');
     }
   }, []);
 
@@ -148,41 +138,44 @@ const CreateSnippetPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 主内容区 */}
+      {/* 主内容区 - 双列布局 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-6">
-          {/* 代码编辑器区域 */}
-          <CodeEditorBlock
-            files={files}
-            onFilesChange={handleFilesChange}
-          />
+        <Row gutter={24}>
+          {/* 左侧列 - 主内容创作区 */}
+          <Col span={16}>
+            <div className="space-y-6">
+              {/* 代码编辑器区域 */}
+              <CodeEditorBlock
+                files={files}
+                onFilesChange={handleFilesChange}
+              />
 
-          {/* 更多设置区域 */}
-          <MoreSettings
-            title={title}
-            setTitle={setTitle}
-            tags={tags}
-            setTags={setTags}
-            expiryHours={expiryHours}
-            setExpiryHours={setExpiryHours}
-          />
+              {/* Markdown 描述区域 */}
+              <MarkdownEditorPanel
+                value={description}
+                onChange={setDescription}
+              />
+            </div>
+          </Col>
 
-          {/* Markdown 描述区域 */}
-          <MarkdownEditor
-            value={description}
-            onChange={setDescription}
-          />
-
-          {/* 底部操作区域 */}
-          <Actions
-            visibility={visibility}
-            password={password}
-            onVisibilityChange={handleVisibilityChange}
-            onPasswordChange={setPassword}
-            onSubmit={handleSubmit}
-            loading={loading}
-          />
-        </div>
+          {/* 右侧列 - 配置与操作区 */}
+          <Col span={8}>
+            <SettingsPanel
+              title={title}
+              setTitle={setTitle}
+              tags={tags}
+              setTags={setTags}
+              expiryDate={expiryDate}
+              setExpiryDate={setExpiryDate}
+              visibility={visibility}
+              password={password}
+              onVisibilityChange={handleVisibilityChange}
+              onPasswordChange={setPassword}
+              onSubmit={handleSubmit}
+              loading={loading}
+            />
+          </Col>
+        </Row>
       </div>
     </div>
   );
