@@ -131,5 +131,18 @@ export const apiService = {
       createdAt: new Date(item.created_at),
       updatedAt: new Date(item.updated_at)
     }));
+  },
+
+  async deleteSnippet(id: string): Promise<void> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { error } = await supabase
+      .from('code_snippets')
+      .delete()
+      .eq('id', id)
+      .eq('author_id', user.id); // Ensure user can only delete their own snippets
+
+    if (error) throw error;
   }
 };

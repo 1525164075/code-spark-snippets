@@ -1,90 +1,55 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { supabase } from '@/integrations/supabase/client';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 import { Eye, Edit, Trash2, Plus, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { zhCN } from 'date-fns/locale';
-
-interface CodeSnippet {
-  id: string;
-  title: string;
-  language: string;
-  created_at: string;
-  view_count: number;
-  is_private: boolean;
-  share_id: string;
-}
+import { zhCN, enUS } from 'date-fns/locale';
+import { apiService } from '@/services/apiService';
 
 const MySnippets = () => {
   const { user } = useAuth();
-  const [snippets, setSnippets] = useState<CodeSnippet[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+  const { toast } = useToast();
+  const { t, i18n } = useTranslation();
+  const queryClient = useQueryClient();
 
-  const fetchMySnippets = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('code_snippets')
-        .select('id, title, language, created_at, view_count, is_private, share_id')
-        .eq('author_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      setSnippets(data || []);
-    } catch (error: any) {
-      toast({
-        title: "加载失败",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: snippets = [], isLoading, error } = useQuery({
+    queryKey: ['userSnippets'],
+    queryFn: () => apiService.getUserSnippets(),
+    enabled: !!user
+  });
 
   const handleDelete = async (id: string) => {
-    if (!confirm('确定要删除这个代码片段吗？此操作不可恢复。')) return;
+    if (!confirm(t('profile.deleteConfirm'))) return;
 
-    setDeleteLoading(id);
     try {
-      const { error } = await supabase
-        .from('code_snippets')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setSnippets(snippets.filter(snippet => snippet.id !== id));
+      // Note: We'll need to add a delete method to apiService
+      await apiService.deleteSnippet(id);
+      
+      // Refresh the data
+      queryClient.invalidateQueries({ queryKey: ['userSnippets'] });
+      
       toast({
-        title: "删除成功",
-        description: "代码片段已删除",
+        title: t('profile.deleteSuccess'),
+        description: t('profile.deleteSuccessDesc'),
       });
     } catch (error: any) {
       toast({
-        title: "删除失败",
+        title: t('profile.deleteFailed'),
         description: error.message,
         variant: "destructive",
       });
-    } finally {
-      setDeleteLoading(null);
     }
   };
 
-  useEffect(() => {
-    fetchMySnippets();
-  }, [user]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-8">
@@ -99,15 +64,15 @@ const MySnippets = () => {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>我的代码片段</CardTitle>
+            <CardTitle>{t('profile.mySnippetsTitle')}</CardTitle>
             <CardDescription>
-              管理您创建的所有代码片段 ({snippets.length} 个)
+              {t('profile.mySnippetsDesc', { count: snippets.length })}
             </CardDescription>
           </div>
           <Button asChild>
             <Link to="/create">
               <Plus className="mr-2 h-4 w-4" />
-              创建新片段
+              {t('profile.createNewSnippet')}
             </Link>
           </Button>
         </div>
@@ -115,9 +80,9 @@ const MySnippets = () => {
       <CardContent>
         {snippets.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500 mb-4">您还没有创建任何代码片段</p>
+            <p className="text-gray-500 mb-4">{t('profile.noSnippetsYet')}</p>
             <Button asChild>
-              <Link to="/create">创建第一个代码片段</Link>
+              <Link to="/create">{t('profile.createFirstSnippet')}</Link>
             </Button>
           </div>
         ) : (
@@ -125,29 +90,31 @@ const MySnippets = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>标题</TableHead>
-                  <TableHead>语言</TableHead>
-                  <TableHead>可见性</TableHead>
-                  <TableHead>浏览次数</TableHead>
-                  <TableHead>创建时间</TableHead>
-                  <TableHead>操作</TableHead>
+                  <TableHead>{t('profile.snippetTitle')}</TableHead>
+                  <TableHead>{t('profile.language')}</TableHead>
+                  <TableHead>{t('profile.visibility')}</TableHead>
+                  <TableHead>{t('profile.viewCount')}</TableHead>
+                  <TableHead>{t('profile.createdAt')}</TableHead>
+                  <TableHead>{t('profile.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {snippets.map((snippet) => (
-                  <TableRow key={snippet.id}>
+                  <TableRow key={snippet._id}>
                     <TableCell className="font-medium">{snippet.title}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{snippet.language}</Badge>
+                      <Badge variant="secondary">{snippet.files[0]?.language || 'javascript'}</Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={snippet.is_private ? "destructive" : "default"}>
-                        {snippet.is_private ? "私有" : "公开"}
+                      <Badge variant={snippet.visibility === 'private' ? "destructive" : "default"}>
+                        {snippet.visibility === 'private' ? t('profile.private') : t('profile.public')}
                       </Badge>
                     </TableCell>
-                    <TableCell>{snippet.view_count}</TableCell>
+                    <TableCell>0</TableCell>
                     <TableCell>
-                      {format(new Date(snippet.created_at), 'yyyy年MM月dd日', { locale: zhCN })}
+                      {format(new Date(snippet.createdAt), 'yyyy年MM月dd日', { 
+                        locale: i18n.language === 'zh-CN' ? zhCN : enUS 
+                      })}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -156,21 +123,16 @@ const MySnippets = () => {
                           variant="outline"
                           asChild
                         >
-                          <Link to={`/share/${snippet.share_id}`}>
+                          <Link to={`/share/${snippet._id}`}>
                             <Eye className="h-4 w-4" />
                           </Link>
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleDelete(snippet.id)}
-                          disabled={deleteLoading === snippet.id}
+                          onClick={() => handleDelete(snippet._id!)}
                         >
-                          {deleteLoading === snippet.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
-                          )}
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>

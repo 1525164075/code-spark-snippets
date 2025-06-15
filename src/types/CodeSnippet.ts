@@ -1,4 +1,3 @@
-
 // 定义 CodeSnippet 的 TypeScript 接口和 Mongoose Schema
 export interface ICodeFile {
   filename: string;
@@ -16,6 +15,7 @@ export interface ICodeSnippet {
   password?: string;
   expiresAt?: Date;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 // Mongoose Schema 定义（用于实际后端实现时参考）
