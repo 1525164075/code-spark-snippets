@@ -29,7 +29,7 @@ const CreateSnippetPage: React.FC = () => {
   const [password, setPassword] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 
-  // 提交处理函数
+  // 提交处理函数 - 更新后的逻辑
   const handleSubmit = useCallback(async () => {
     try {
       // 验证输入
@@ -85,19 +85,24 @@ const CreateSnippetPage: React.FC = () => {
 
       console.log('Creating code snippet with data:', requestData);
 
-      // 模拟 API 调用
+      // 模拟 API 调用 POST /api/snippets
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       const mockResponse = {
-        id: 'mock_snippet_' + Date.now(),
-        url: `/share/mock_snippet_${Date.now()}`
+        id: 'snippet_' + Date.now(),
+        url: `/share/snippet_${Date.now()}`
       };
 
       // 成功提示
       toast({
         title: "创建成功！",
-        description: `你的代码片段已成功创建。分享链接: ${window.location.origin}${mockResponse.url}`,
+        description: `你的代码片段已成功创建`,
       });
+
+      // 1秒后导航到代码列表页
+      setTimeout(() => {
+        navigate('/snippets');
+      }, 1000);
 
     } catch (error) {
       console.error('Failed to create snippet:', error);
@@ -109,7 +114,7 @@ const CreateSnippetPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [title, files, description, tags, visibility, password, expiryHours, toast]);
+  }, [title, files, description, tags, visibility, password, expiryHours, toast, navigate]);
 
   // 文件变化处理
   const handleFilesChange = useCallback((newFiles: ICodeFile[]) => {

@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { RotateCcw, Lock, Globe } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface ActionsProps {
   visibility: 'public' | 'private';
@@ -35,28 +34,6 @@ const Actions: React.FC<ActionsProps> = ({
     onPasswordChange(result);
   }, [onPasswordChange]);
 
-  // 动画配置 - 修复类型错误
-  const slideVariants = {
-    hidden: {
-      height: 0,
-      opacity: 0,
-      marginTop: 0,
-      transition: {
-        duration: 0.3,
-        ease: [0.4, 0.0, 0.2, 1] // 使用贝塞尔曲线数组而不是字符串
-      }
-    },
-    visible: {
-      height: "auto",
-      opacity: 1,
-      marginTop: 16,
-      transition: {
-        duration: 0.3,
-        ease: [0.4, 0.0, 0.2, 1] // 使用贝塞尔曲线数组而不是字符串
-      }
-    }
-  };
-
   return (
     <Card className="sticky bottom-0 bg-white shadow-lg border-t-2 border-blue-100">
       <CardHeader>
@@ -84,51 +61,41 @@ const Actions: React.FC<ActionsProps> = ({
           </RadioGroup>
         </div>
 
-        {/* 密码输入框 - 带动画 */}
-        <AnimatePresence>
-          {visibility === 'private' && (
-            <motion.div
-              variants={slideVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              style={{ overflow: 'hidden' }}
-            >
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <h5 className="text-sm font-medium text-yellow-800 mb-2">
-                  设置访问密码
-                </h5>
-                <p className="text-xs text-yellow-600 mb-3">
-                  其他人需要输入正确密码才能查看此代码片段
-                </p>
-                <div className="flex gap-2">
-                  <Input
-                    type="password"
-                    value={password}
-                    onChange={(e) => onPasswordChange(e.target.value)}
-                    placeholder="输入6位以上密码"
-                    maxLength={20}
-                    className="font-mono flex-1"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={generateRandomPassword}
-                    title="生成随机密码"
-                  >
-                    <RotateCcw className="h-4 w-4" />
-                  </Button>
-                </div>
-                {password && password.length < 6 && (
-                  <p className="text-xs text-red-500 mt-1">
-                    密码长度至少需要6位字符
-                  </p>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* 密码输入框 - 简化动画 */}
+        {visibility === 'private' && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 animate-fade-in">
+            <h5 className="text-sm font-medium text-yellow-800 mb-2">
+              设置访问密码
+            </h5>
+            <p className="text-xs text-yellow-600 mb-3">
+              其他人需要输入正确密码才能查看此代码片段
+            </p>
+            <div className="flex gap-2">
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => onPasswordChange(e.target.value)}
+                placeholder="输入6位以上密码"
+                maxLength={20}
+                className="font-mono flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={generateRandomPassword}
+                title="生成随机密码"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            </div>
+            {password && password.length < 6 && (
+              <p className="text-xs text-red-500 mt-1">
+                密码长度至少需要6位字符
+              </p>
+            )}
+          </div>
+        )}
 
         {/* 提交按钮 */}
         <div className="flex justify-end pt-4 border-t gap-2">
