@@ -4,77 +4,71 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
-import { Plus, Search, Code, Share, Lock, Clock, Tag, User, Calendar } from "lucide-react";
+import { Plus, Search, Code, Share, Lock, Clock, Tag, User, Calendar, Eye } from "lucide-react";
+import React, { useState } from 'react';
+import CodePreviewModal from "@/components/CodePreviewModal";
+import { ICodeSnippet } from "@/types/CodeSnippet";
 
 const Index = () => {
+  const [previewSnippet, setPreviewSnippet] = useState<ICodeSnippet | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   // 模拟数据
   const recentSnippets = [
     {
-      id: '1',
+      _id: '1',
       title: 'React useCallback Hook 示例',
       description: '演示如何正确使用 useCallback 优化 React 组件性能',
       tags: ['react', 'hooks', 'performance'],
-      language: 'javascript',
-      author: 'developer',
-      createdAt: '2024-01-15',
-      isPrivate: false,
-      preview: 'const memoizedCallback = useCallback(() => {\n  doSomething(a, b);\n}, [a, b]);'
+      files: [
+        {
+          filename: 'useCallback-example.js',
+          language: 'javascript',
+          content: 'import React, { useState, useCallback } from \'react\';\n\nfunction ExpensiveComponent({ onButtonClick }) {\n  console.log(\'ExpensiveComponent rendered\');\n  return <button onClick={onButtonClick}>Click me</button>;\n}\n\nfunction App() {\n  const [count, setCount] = useState(0);\n  const [name, setName] = useState(\'\');\n\n  // 使用 useCallback 优化性能\n  const memoizedCallback = useCallback(() => {\n    setCount(prevCount => prevCount + 1);\n  }, []); // 依赖数组为空，回调函数永远不会改变\n\n  return (\n    <div>\n      <input \n        value={name} \n        onChange={(e) => setName(e.target.value)} \n        placeholder="Type your name"\n      />\n      <p>Count: {count}</p>\n      <ExpensiveComponent onButtonClick={memoizedCallback} />\n    </div>\n  );\n}'
+        }
+      ],
+      visibility: 'public' as const,
+      createdAt: new Date('2024-01-15')
     },
     {
-      id: '2', 
+      _id: '2', 
       title: 'Python 数据处理脚本',
       description: '使用 pandas 处理 CSV 数据的常用操作',
       tags: ['python', 'pandas', 'data'],
-      language: 'python',
-      author: 'data_analyst',
-      createdAt: '2024-01-14',
-      isPrivate: true,
-      preview: 'import pandas as pd\n\ndf = pd.read_csv("data.csv")\ndf.head()'
+      files: [
+        {
+          filename: 'data-processing.py',
+          language: 'python',
+          content: 'import pandas as pd\nimport numpy as np\nfrom datetime import datetime\n\n# 读取 CSV 文件\ndf = pd.read_csv("data.csv")\n\n# 数据清洗\nprint("数据基本信息：")\nprint(df.info())\nprint("\\n缺失值统计：")\nprint(df.isnull().sum())\n\n# 处理缺失值\ndf.fillna(df.mean(), inplace=True)  # 数值列用均值填充\ndf[\'category\'].fillna(\'未知\', inplace=True)  # 分类列用默认值填充\n\n# 数据转换\ndf[\'date\'] = pd.to_datetime(df[\'date\'])\ndf[\'year\'] = df[\'date\'].dt.year\ndf[\'month\'] = df[\'date\'].dt.month\n\n# 数据分组聚合\nresult = df.groupby([\'category\', \'year\']).agg({\n    \'sales\': [\'sum\', \'mean\', \'count\'],\n    \'profit\': \'sum\'\n}).round(2)\n\nprint("\\n聚合结果：")\nprint(result)\n\n# 保存处理后的数据\ndf.to_csv("processed_data.csv", index=False)\nprint("\\n数据处理完成，结果已保存到 processed_data.csv")'
+        }
+      ],
+      visibility: 'private' as const,
+      createdAt: new Date('2024-01-14')
     },
     {
-      id: '3',
+      _id: '3',
       title: 'CSS Grid 布局模板',
       description: '响应式网格布局的最佳实践',
       tags: ['css', 'grid', 'responsive'],
-      language: 'css',
-      author: 'ui_designer',
-      createdAt: '2024-01-13',
-      isPrivate: false,
-      preview: '.grid-container {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));\n  gap: 20px;\n}'
+      files: [
+        {
+          filename: 'grid-layout.css',
+          language: 'css',
+          content: '/* 基础网格容器 */\n.grid-container {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));\n  gap: 20px;\n  padding: 20px;\n  max-width: 1200px;\n  margin: 0 auto;\n}\n\n/* 响应式网格项 */\n.grid-item {\n  background: #ffffff;\n  border-radius: 8px;\n  padding: 20px;\n  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);\n  transition: transform 0.2s ease;\n}\n\n.grid-item:hover {\n  transform: translateY(-5px);\n  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);\n}\n\n/* 特殊布局：头部占满宽度 */\n.grid-header {\n  grid-column: 1 / -1;\n  text-align: center;\n  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n  color: white;\n  padding: 40px;\n  border-radius: 12px;\n}\n\n/* 侧边栏布局 */\n.grid-sidebar {\n  grid-row: span 2;\n  background: #f8f9fa;\n}\n\n/* 移动端适配 */\n@media (max-width: 768px) {\n  .grid-container {\n    grid-template-columns: 1fr;\n    gap: 15px;\n    padding: 15px;\n  }\n  \n  .grid-sidebar {\n    grid-row: span 1;\n  }\n}'
+        }
+      ],
+      visibility: 'public' as const,
+      createdAt: new Date('2024-01-13')
     }
   ];
 
+  const handlePreview = (snippet: any) => {
+    setPreviewSnippet(snippet);
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <Code className="h-8 w-8 text-blue-600" />
-              <h1 className="text-2xl font-bold text-gray-900">CodeSnip</h1>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  type="text"
-                  placeholder="搜索代码片段..."
-                  className="pl-10 w-64"
-                />
-              </div>
-              <Link to="/create">
-                <Button className="flex items-center space-x-2">
-                  <Plus className="h-4 w-4" />
-                  <span>创建片段</span>
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -91,10 +85,12 @@ const Index = () => {
                 <span>开始创建</span>
               </Button>
             </Link>
-            <Button variant="outline" size="lg" className="flex items-center space-x-2">
-              <Share className="h-5 w-5" />
-              <span>浏览公开片段</span>
-            </Button>
+            <Link to="/snippets">
+              <Button variant="outline" size="lg" className="flex items-center space-x-2">
+                <Share className="h-5 w-5" />
+                <span>浏览公开片段</span>
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -150,16 +146,18 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-3xl font-bold text-gray-900">最近的代码片段</h3>
-            <Button variant="outline">查看全部</Button>
+            <Link to="/snippets">
+              <Button variant="outline">查看全部</Button>
+            </Link>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {recentSnippets.map((snippet) => (
-              <Card key={snippet.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+              <Card key={snippet._id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <CardTitle className="text-lg">{snippet.title}</CardTitle>
-                    {snippet.isPrivate && (
+                    {snippet.visibility === 'private' && (
                       <Badge variant="secondary" className="flex items-center space-x-1">
                         <Lock className="h-3 w-3" />
                         <span>私密</span>
@@ -174,7 +172,7 @@ const Index = () => {
                 <CardContent>
                   <div className="mb-4">
                     <pre className="bg-gray-100 p-3 rounded-md text-sm overflow-x-auto">
-                      <code>{snippet.preview}</code>
+                      <code>{snippet.files[0]?.content.substring(0, 100)}...</code>
                     </pre>
                   </div>
                   
@@ -187,16 +185,26 @@ const Index = () => {
                     ))}
                   </div>
                   
-                  <div className="flex justify-between items-center text-xs text-gray-500">
+                  <div className="flex justify-between items-center text-xs text-gray-500 mb-3">
                     <div className="flex items-center space-x-1">
                       <User className="h-3 w-3" />
-                      <span>{snippet.author}</span>
+                      <span>developer</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <Calendar className="h-3 w-3" />
-                      <span>{snippet.createdAt}</span>
+                      <span>{snippet.createdAt.toLocaleDateString('zh-CN')}</span>
                     </div>
                   </div>
+
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => handlePreview(snippet)}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    预览代码
+                  </Button>
                 </CardContent>
               </Card>
             ))}
@@ -251,6 +259,13 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      {/* 代码预览模态框 */}
+      <CodePreviewModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        snippet={previewSnippet}
+      />
     </div>
   );
 };

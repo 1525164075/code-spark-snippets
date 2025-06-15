@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -31,36 +31,46 @@ const AppHeader = () => {
       .slice(0, 2);
   };
 
+  const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
+    `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+      isActive 
+        ? 'bg-blue-100 text-blue-700 font-semibold' 
+        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+    }`;
+
   return (
-    <header className="border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <header className="border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center space-x-2">
+        {/* 左侧 Logo */}
+        <NavLink to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
           <Code2 className="h-8 w-8 text-blue-600" />
           <span className="text-xl font-bold text-gray-900">CodeSnip</span>
-        </Link>
+        </NavLink>
 
-        <nav className="hidden md:flex items-center space-x-6">
-          <Link to="/" className="text-gray-600 hover:text-gray-900 transition-colors">
+        {/* 中间导航链接 */}
+        <nav className="hidden md:flex items-center space-x-1">
+          <NavLink to="/" className={navLinkClassName}>
             首页
-          </Link>
-          <Link to="/snippets" className="text-gray-600 hover:text-gray-900 transition-colors">
-            浏览代码
-          </Link>
+          </NavLink>
+          <NavLink to="/snippets" className={navLinkClassName}>
+            代码广场
+          </NavLink>
           {user && (
-            <Link to="/create" className="text-gray-600 hover:text-gray-900 transition-colors">
-              创建片段
-            </Link>
+            <NavLink to="/create" className={navLinkClassName}>
+              创建代码
+            </NavLink>
           )}
         </nav>
 
+        {/* 右侧操作区 */}
         <div className="flex items-center space-x-4">
           {user ? (
             <div className="flex items-center space-x-3">
               <Button asChild variant="outline" size="sm">
-                <Link to="/create">
+                <NavLink to="/create">
                   <Plus className="h-4 w-4 mr-1" />
                   创建
-                </Link>
+                </NavLink>
               </Button>
               
               <DropdownMenu>
@@ -87,16 +97,16 @@ const AppHeader = () => {
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/snippets" className="cursor-pointer">
+                    <NavLink to="/snippets" className="cursor-pointer">
                       <List className="mr-2 h-4 w-4" />
                       我的代码片段
-                    </Link>
+                    </NavLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/profile" className="cursor-pointer">
+                    <NavLink to="/profile" className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
                       个人资料
-                    </Link>
+                    </NavLink>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
@@ -109,10 +119,10 @@ const AppHeader = () => {
           ) : (
             <div className="flex items-center space-x-3">
               <Button asChild variant="ghost">
-                <Link to="/login">登录</Link>
+                <NavLink to="/login">登录</NavLink>
               </Button>
               <Button asChild>
-                <Link to="/register">注册</Link>
+                <NavLink to="/register">注册</NavLink>
               </Button>
             </div>
           )}
