@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import MDEditor from '@uiw/react-md-editor';
 
@@ -9,6 +10,8 @@ interface MarkdownEditorPanelProps {
 }
 
 const MarkdownEditorPanel: React.FC<MarkdownEditorPanelProps> = ({ value, onChange }) => {
+  const { t } = useTranslation();
+
   const handleChange = (val?: string) => {
     onChange(val || '');
   };
@@ -16,7 +19,7 @@ const MarkdownEditorPanel: React.FC<MarkdownEditorPanelProps> = ({ value, onChan
   return (
     <Card>
       <CardHeader>
-        <CardTitle>描述 (支持 Markdown)</CardTitle>
+        <CardTitle>{t('create.markdownTitle')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div data-color-mode="light">
@@ -27,25 +30,7 @@ const MarkdownEditorPanel: React.FC<MarkdownEditorPanelProps> = ({ value, onChan
             hideToolbar={false}
             visibleDragbar={false}
             textareaProps={{
-              placeholder: `支持 Markdown 语法，例如：
-
-# 这是标题
-这是普通文本段落。
-
-## 功能特性
-- 支持**粗体**和*斜体*
-- 支持 \`行内代码\`
-- 支持链接：[GitHub](https://github.com)
-
-\`\`\`javascript
-// 支持代码块
-function hello() {
-  console.log('Hello World!');
-}
-\`\`\`
-
-> 这是引用块
-`,
+              placeholder: t('create.markdownPlaceholder'),
               style: {
                 fontSize: 14,
                 lineHeight: 1.6,
@@ -56,7 +41,7 @@ function hello() {
           />
         </div>
         <div className="text-sm text-gray-500 mt-2">
-          {value.length}/5000 字符
+          {value.length}/5000 {t('create.characterCount')}
         </div>
       </CardContent>
     </Card>

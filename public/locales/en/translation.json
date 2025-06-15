@@ -80,7 +80,10 @@
     "publicVisibility": "Public - Anyone can view",
     "privateVisibility": "Private - Password required",
     "accessPassword": "Access Password",
-    "passwordRequiredPlaceholder": "Set access password (at least 6 characters)"
+    "passwordRequiredPlaceholder": "Set access password (at least 6 characters)",
+    "markdownTitle": "Description (Markdown Supported)",
+    "markdownPlaceholder": "Supports Markdown syntax, for example:\n\n# This is a title\nThis is a regular text paragraph.\n\n## Features\n- Support **bold** and *italic*\n- Support `inline code`\n- Support links: [GitHub](https://github.com)\n\n```javascript\n// Support code blocks\nfunction hello() {\n  console.log('Hello World!');\n}\n```\n\n> This is a quote block\n",
+    "characterCount": "characters"
   },
   "errors": {
     "titleRequired": "Please enter snippet title",
