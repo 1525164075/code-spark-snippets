@@ -7,6 +7,7 @@ import CodeEditorBlock from '../components/CodeEditorBlock';
 import SettingsPanel from '../components/SettingsPanel';
 import MarkdownEditorPanel from '../components/MarkdownEditorPanel';
 import { ICodeFile, CreateSnippetRequest } from '../types/CodeSnippet';
+import { mockDataStore } from '../services/mockDataStore';
 
 // Mock API function for creating code snippets
 const createSnippet = async (data: CreateSnippetRequest): Promise<any> => {
@@ -47,7 +48,7 @@ const CreateSnippetPage: React.FC = () => {
 
   // Use useMutation to handle snippet creation
   const mutation = useMutation({
-    mutationFn: createSnippet,
+    mutationFn: (data: CreateSnippetRequest) => mockDataStore.createSnippet(data),
     onSuccess: () => {
       // Key fix: Invalidate the 'snippets' query to trigger automatic refetch
       queryClient.invalidateQueries({ queryKey: ['snippets'] });
