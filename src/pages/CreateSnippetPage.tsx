@@ -35,15 +35,18 @@ const CreateSnippetPage: React.FC = () => {
   // Use useMutation to handle snippet creation
   const mutation = useMutation({
     mutationFn: async (data: CreateSnippetRequest) => {
-      console.log('Creating snippet with data:', data);
+      console.log('Mutation started with data:', data);
       
       try {
         const result = await apiService.createSnippet(data);
         console.log('Snippet created successfully:', result);
         return result;
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error creating snippet:', error);
-        throw error;
+        // Re-throw with more specific error message
+        const errorMessage = error.message || 'Unknown error occurred';
+        console.error('Detailed error message:', errorMessage);
+        throw new Error(errorMessage);
       }
     },
     onSuccess: (data) => {
@@ -62,10 +65,24 @@ const CreateSnippetPage: React.FC = () => {
       }, 1000);
     },
     onError: (error: any) => {
-      console.error('Mutation failed:', error);
+      console.error('Mutation failed with error:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error message:', error.message);
+      
+      let errorMessage = error.message || t('errors.checkInput');
+      
+      // Handle specific error cases
+      if (errorMessage.includes('baseurl64') || errorMessage.includes('base64url')) {
+        errorMessage = '数据编码错误，请重试';
+      } else if (errorMessage.includes('duplicate') || errorMessage.includes('unique')) {
+        errorMessage = '代码片段可能已存在，请修改标题后重试';
+      } else if (errorMessage.includes('auth')) {
+        errorMessage = '用户认证失败，请重新登录';
+      }
+      
       toast({
         title: t('errors.createFailed'),
-        description: error.message || t('errors.checkInput'),
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -73,10 +90,17 @@ const CreateSnippetPage: React.FC = () => {
 
   // Submit handling function
   const handleSubmit = useCallback(async () => {
-    console.log('Submit started with:', { title, files, visibility, password });
+    console.log('Submit started with state:', { 
+      title, 
+      filesCount: files.length, 
+      visibility, 
+      passwordLength: password.length,
+      tagsCount: tags.length
+    });
     
     // Validation
     if (!title.trim()) {
+      console.error('Validation failed: Title is empty');
       toast({
         title: t('common.error'),
         description: t('errors.titleRequired'),
@@ -86,6 +110,7 @@ const CreateSnippetPage: React.FC = () => {
     }
 
     if (files.length === 0) {
+      console.error('Validation failed: No files provided');
       toast({
         title: t('common.error'), 
         description: t('errors.fileRequired'),
@@ -96,12 +121,14 @@ const CreateSnippetPage: React.FC = () => {
 
     const hasEmptyFiles = files.some(file => !file.content.trim());
     if (hasEmptyFiles) {
+      console.warn('Warning: Some files are empty');
       const confirmContinue = window.confirm(t('errors.emptyFiles'));
       if (!confirmContinue) return;
     }
 
     // Validate private snippet password
     if (visibility === 'private' && password.length < 6) {
+      console.error('Validation failed: Password too short for private snippet');
       toast({
         title: t('common.error'),
         description: t('errors.passwordLength'),
@@ -110,21 +137,32 @@ const CreateSnippetPage: React.FC = () => {
       return;
     }
 
-    // Build request data
+    // Build request data with careful validation
     const requestData: CreateSnippetRequest = {
       title: title.trim(),
-      files: files,
-      description: description,
-      tags: tags,
+      files: files.map(file => ({
+        filename: file.filename || 'untitled',
+        language: file.language || 'javascript',
+        content: file.content || ''
+      })),
+      description: description.trim(),
+      tags: tags.filter(tag => tag.trim().length > 0),
       visibility: visibility,
       password: visibility === 'private' ? password : undefined,
       expiresAt: expiryDate || undefined,
     };
 
-    console.log('Submitting request data:', requestData);
+    console.log('Final request data:', {
+      ...requestData,
+      password: requestData.password ? '[REDACTED]' : undefined
+    });
 
     // Execute creation
-    mutation.mutate(requestData);
+    try {
+      mutation.mutate(requestData);
+    } catch (error: any) {
+      console.error('Error in mutation.mutate:', error);
+    }
   }, [title, files, description, tags, visibility, password, expiryDate, mutation, toast, t]);
 
   // File change handling
@@ -133,7 +171,6 @@ const CreateSnippetPage: React.FC = () => {
     setFiles(newFiles);
   }, []);
 
-  // Visibility change handling
   const handleVisibilityChange = useCallback((newVisibility: 'public' | 'private') => {
     console.log('Visibility changed to:', newVisibility);
     setVisibility(newVisibility);
