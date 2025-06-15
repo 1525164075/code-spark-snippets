@@ -7,8 +7,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { ICodeSnippet } from '@/types/CodeSnippet';
 import { Calendar, Code, Tag, User } from 'lucide-react';
 
@@ -61,20 +59,11 @@ const CodePreviewModal: React.FC<CodePreviewModalProps> = ({
                   </div>
                 </div>
                 <div className="overflow-x-auto">
-                  <SyntaxHighlighter
-                    language={file.language}
-                    style={oneLight}
-                    customStyle={{
-                      margin: 0,
-                      padding: '1rem',
-                      background: '#fafafa',
-                      fontSize: '14px',
-                      lineHeight: '1.5'
-                    }}
-                    showLineNumbers
-                  >
-                    {file.content}
-                  </SyntaxHighlighter>
+                  <pre className="bg-gray-50 p-4 text-sm font-mono overflow-x-auto">
+                    <code className="text-gray-800 leading-relaxed">
+                      {file.content}
+                    </code>
+                  </pre>
                 </div>
               </div>
             ))}
