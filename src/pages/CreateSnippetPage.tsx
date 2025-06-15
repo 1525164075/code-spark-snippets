@@ -1,15 +1,32 @@
 
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import CodeEditorBlock from '../components/CodeEditorBlock';
 import SettingsPanel from '../components/SettingsPanel';
 import MarkdownEditorPanel from '../components/MarkdownEditorPanel';
 import { ICodeFile, CreateSnippetRequest } from '../types/CodeSnippet';
 
+// 模拟创建代码片段的 API 函数
+const createSnippet = async (data: CreateSnippetRequest): Promise<any> => {
+  console.log('Creating code snippet with data:', data);
+  
+  // 模拟网络延迟
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  
+  // 模拟成功响应
+  return {
+    id: 'snippet-' + Date.now(),
+    ...data,
+    createdAt: new Date()
+  };
+};
+
 const CreateSnippetPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // 核心状态管理
   const [files, setFiles] = useState<ICodeFile[]>([
@@ -26,64 +43,14 @@ const CreateSnippetPage: React.FC = () => {
   const [description, setDescription] = useState<string>('');
   const [visibility, setVisibility] = useState<'public' | 'private'>('public');
   const [password, setPassword] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
 
-  // 提交处理函数
-  const handleSubmit = useCallback(async () => {
-    try {
-      // 验证输入
-      if (!title.trim()) {
-        toast({
-          title: "错误",
-          description: "请输入代码片段标题",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (files.length === 0) {
-        toast({
-          title: "错误", 
-          description: "至少需要添加一个代码文件",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const hasEmptyFiles = files.some(file => !file.content.trim());
-      if (hasEmptyFiles) {
-        const confirmContinue = window.confirm('某些代码文件内容为空，确定要继续创建吗？');
-        if (!confirmContinue) return;
-      }
-
-      // 验证私有片段密码
-      if (visibility === 'private' && password.length < 6) {
-        toast({
-          title: "错误",
-          description: "私有代码片段密码长度至少需要6位字符",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setLoading(true);
-
-      // 构建请求数据
-      const requestData: CreateSnippetRequest = {
-        title: title.trim(),
-        files: files,
-        description: description,
-        tags: tags,
-        visibility: visibility,
-        password: visibility === 'private' ? password : undefined,
-        expiresAt: expiryDate || undefined,
-      };
-
-      console.log('Creating code snippet with data:', requestData);
-
-      // 模拟 API 调用
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
+  // 使用 useMutation 来处理创建代码片段
+  const mutation = useMutation({
+    mutationFn: createSnippet,
+    onSuccess: () => {
+      // 关键！让 'snippets' 查询失效，触发自动重新获取
+      queryClient.invalidateQueries({ queryKey: ['snippets'] });
+      
       toast({
         title: "创建成功！",
         description: `你的代码片段已成功创建`,
@@ -92,18 +59,68 @@ const CreateSnippetPage: React.FC = () => {
       setTimeout(() => {
         navigate('/snippets');
       }, 1000);
-
-    } catch (error) {
+    },
+    onError: (error: Error) => {
       console.error('Failed to create snippet:', error);
       toast({
         title: "创建失败",
         description: "请检查输入信息后重试",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
-  }, [title, files, description, tags, visibility, password, expiryDate, toast, navigate]);
+  });
+
+  // 提交处理函数
+  const handleSubmit = useCallback(async () => {
+    // 验证输入
+    if (!title.trim()) {
+      toast({
+        title: "错误",
+        description: "请输入代码片段标题",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (files.length === 0) {
+      toast({
+        title: "错误", 
+        description: "至少需要添加一个代码文件",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const hasEmptyFiles = files.some(file => !file.content.trim());
+    if (hasEmptyFiles) {
+      const confirmContinue = window.confirm('某些代码文件内容为空，确定要继续创建吗？');
+      if (!confirmContinue) return;
+    }
+
+    // 验证私有片段密码
+    if (visibility === 'private' && password.length < 6) {
+      toast({
+        title: "错误",
+        description: "私有代码片段密码长度至少需要6位字符",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // 构建请求数据
+    const requestData: CreateSnippetRequest = {
+      title: title.trim(),
+      files: files,
+      description: description,
+      tags: tags,
+      visibility: visibility,
+      password: visibility === 'private' ? password : undefined,
+      expiresAt: expiryDate || undefined,
+    };
+
+    // 执行创建
+    mutation.mutate(requestData);
+  }, [title, files, description, tags, visibility, password, expiryDate, mutation, toast]);
 
   // 文件变化处理
   const handleFilesChange = useCallback((newFiles: ICodeFile[]) => {
@@ -169,7 +186,7 @@ const CreateSnippetPage: React.FC = () => {
               onVisibilityChange={handleVisibilityChange}
               onPasswordChange={setPassword}
               onSubmit={handleSubmit}
-              loading={loading}
+              loading={mutation.isPending}
             />
           </div>
         </div>

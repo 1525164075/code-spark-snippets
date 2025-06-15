@@ -1,6 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,119 +11,120 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, Plus, Calendar, Code, Tag } from 'lucide-react';
 import { ICodeSnippet } from '../types/CodeSnippet';
 
+// 模拟 API 调用函数
+const fetchSnippets = async (): Promise<ICodeSnippet[]> => {
+  console.log('Fetching snippets list...');
+  
+  // 模拟网络延迟
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  // 模拟数据
+  const mockSnippets: ICodeSnippet[] = [
+    {
+      _id: 'snippet-1',
+      title: 'React Hook 实用工具',
+      files: [
+        {
+          filename: 'useLocalStorage.js',
+          language: 'javascript',
+          content: 'const useLocalStorage = (key, initialValue) => { ... }'
+        }
+      ],
+      description: '一个用于管理 localStorage 的自定义 React Hook',
+      tags: ['react', 'hooks', 'utils'],
+      visibility: 'public',
+      createdAt: new Date('2024-01-15')
+    },
+    {
+      _id: 'snippet-2',
+      title: 'CSS 动画库',
+      files: [
+        {
+          filename: 'animations.css',
+          language: 'css',
+          content: '@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }'
+        }
+      ],
+      description: '常用的 CSS 动画效果合集',
+      tags: ['css', 'animation', 'ui'],
+      visibility: 'public',
+      createdAt: new Date('2024-01-14')
+    },
+    {
+      _id: 'snippet-3',
+      title: 'TypeScript 工具类型',
+      files: [
+        {
+          filename: 'utils.ts',
+          language: 'typescript',
+          content: 'type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;'
+        }
+      ],
+      description: '实用的 TypeScript 工具类型定义',
+      tags: ['typescript', 'types', 'utils'],
+      visibility: 'public',
+      createdAt: new Date('2024-01-13')
+    },
+    {
+      _id: 'snippet-4',
+      title: 'API 请求封装',
+      files: [
+        {
+          filename: 'api.js',
+          language: 'javascript',
+          content: 'const api = { get: (url) => fetch(url), post: (url, data) => fetch(url, { method: "POST", body: JSON.stringify(data) }) };'
+        }
+      ],
+      description: '简单的 API 请求封装函数',
+      tags: ['javascript', 'api', 'fetch'],
+      visibility: 'public',
+      createdAt: new Date('2024-01-12')
+    },
+    {
+      _id: 'snippet-5',
+      title: '响应式设计 Mixins',
+      files: [
+        {
+          filename: 'mixins.scss',
+          language: 'scss',
+          content: '@mixin mobile { @media (max-width: 768px) { @content; } }'
+        }
+      ],
+      description: 'SCSS 响应式设计混入',
+      tags: ['scss', 'responsive', 'css'],
+      visibility: 'public',
+      createdAt: new Date('2024-01-11')
+    }
+  ];
+  
+  return mockSnippets;
+};
+
 const SnippetListPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const [snippets, setSnippets] = useState<ICodeSnippet[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
 
-  // 模拟 API 调用获取代码片段列表
-  useEffect(() => {
-    const fetchSnippets = async () => {
-      try {
-        setLoading(true);
-        console.log('Fetching snippets list...');
-        
-        // 模拟 API 调用
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // 模拟数据
-        const mockSnippets: ICodeSnippet[] = [
-          {
-            _id: 'snippet-1',
-            title: 'React Hook 实用工具',
-            files: [
-              {
-                filename: 'useLocalStorage.js',
-                language: 'javascript',
-                content: 'const useLocalStorage = (key, initialValue) => { ... }'
-              }
-            ],
-            description: '一个用于管理 localStorage 的自定义 React Hook',
-            tags: ['react', 'hooks', 'utils'],
-            visibility: 'public',
-            createdAt: new Date('2024-01-15')
-          },
-          {
-            _id: 'snippet-2',
-            title: 'CSS 动画库',
-            files: [
-              {
-                filename: 'animations.css',
-                language: 'css',
-                content: '@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }'
-              }
-            ],
-            description: '常用的 CSS 动画效果合集',
-            tags: ['css', 'animation', 'ui'],
-            visibility: 'public',
-            createdAt: new Date('2024-01-14')
-          },
-          {
-            _id: 'snippet-3',
-            title: 'TypeScript 工具类型',
-            files: [
-              {
-                filename: 'utils.ts',
-                language: 'typescript',
-                content: 'type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;'
-              }
-            ],
-            description: '实用的 TypeScript 工具类型定义',
-            tags: ['typescript', 'types', 'utils'],
-            visibility: 'public',
-            createdAt: new Date('2024-01-13')
-          },
-          {
-            _id: 'snippet-4',
-            title: 'API 请求封装',
-            files: [
-              {
-                filename: 'api.js',
-                language: 'javascript',
-                content: 'const api = { get: (url) => fetch(url), post: (url, data) => fetch(url, { method: "POST", body: JSON.stringify(data) }) };'
-              }
-            ],
-            description: '简单的 API 请求封装函数',
-            tags: ['javascript', 'api', 'fetch'],
-            visibility: 'public',
-            createdAt: new Date('2024-01-12')
-          },
-          {
-            _id: 'snippet-5',
-            title: '响应式设计 Mixins',
-            files: [
-              {
-                filename: 'mixins.scss',
-                language: 'scss',
-                content: '@mixin mobile { @media (max-width: 768px) { @content; } }'
-              }
-            ],
-            description: 'SCSS 响应式设计混入',
-            tags: ['scss', 'responsive', 'css'],
-            visibility: 'public',
-            createdAt: new Date('2024-01-11')
-          }
-        ];
-        
-        setSnippets(mockSnippets);
-      } catch (error) {
-        console.error('Failed to fetch snippets:', error);
-        toast({
-          title: "加载失败",
-          description: "无法加载代码片段列表，请稍后重试",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSnippets();
-  }, [toast]);
+  // 使用 useQuery 来获取数据
+  const { 
+    data: snippets = [], 
+    isLoading, 
+    isError, 
+    error 
+  } = useQuery({
+    queryKey: ['snippets'],
+    queryFn: fetchSnippets,
+    onError: (error: Error) => {
+      console.error('Failed to fetch snippets:', error);
+      toast({
+        title: "加载失败",
+        description: "无法加载代码片段列表，请稍后重试",
+        variant: "destructive",
+      });
+    }
+  });
 
   // 过滤和排序逻辑
   const filteredAndSortedSnippets = React.useMemo(() => {
@@ -145,7 +147,7 @@ const SnippetListPage: React.FC = () => {
     return filtered;
   }, [snippets, searchTerm, sortBy]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -153,6 +155,23 @@ const SnippetListPage: React.FC = () => {
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
               <p className="text-gray-600">正在加载代码片段...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="text-red-600">加载失败，请稍后重试</p>
+              <Button onClick={() => window.location.reload()} className="mt-4">
+                重新加载
+              </Button>
             </div>
           </div>
         </div>
