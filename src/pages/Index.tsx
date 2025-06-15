@@ -1,178 +1,253 @@
 
-import React from 'react';
-import { Button, Card, Typography, Space, Divider } from 'antd';
-import { CodeOutlined, ShareAltOutlined, LockOutlined, GlobalOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Link } from "react-router-dom";
+import { Plus, Search, Code, Share, Lock, Clock, Tag, User, Calendar } from "lucide-react";
 
-const { Title, Paragraph } = Typography;
-
-const Index: React.FC = () => {
-  const navigate = useNavigate();
-
-  const features = [
+const Index = () => {
+  // 模拟数据
+  const recentSnippets = [
     {
-      icon: <CodeOutlined className="text-2xl text-blue-500" />,
-      title: 'Monaco 编辑器',
-      description: '享受 VS Code 级别的代码编辑体验，支持语法高亮和智能提示'
+      id: '1',
+      title: 'React useCallback Hook 示例',
+      description: '演示如何正确使用 useCallback 优化 React 组件性能',
+      tags: ['react', 'hooks', 'performance'],
+      language: 'javascript',
+      author: 'developer',
+      createdAt: '2024-01-15',
+      isPrivate: false,
+      preview: 'const memoizedCallback = useCallback(() => {\n  doSomething(a, b);\n}, [a, b]);'
     },
     {
-      icon: <ShareAltOutlined className="text-2xl text-green-500" />,
-      title: '一键分享',
-      description: '生成短链接，轻松分享你的代码片段给同事和朋友'
+      id: '2', 
+      title: 'Python 数据处理脚本',
+      description: '使用 pandas 处理 CSV 数据的常用操作',
+      tags: ['python', 'pandas', 'data'],
+      language: 'python',
+      author: 'data_analyst',
+      createdAt: '2024-01-14',
+      isPrivate: true,
+      preview: 'import pandas as pd\n\ndf = pd.read_csv("data.csv")\ndf.head()'
     },
     {
-      icon: <LockOutlined className="text-2xl text-purple-500" />,
-      title: '私密保护',
-      description: '支持密码保护，确保敏感代码的安全性'
-    },
-    {
-      icon: <GlobalOutlined className="text-2xl text-orange-500" />,
-      title: '多语言支持',
-      description: '支持20+种编程语言，满足不同开发场景需求'
+      id: '3',
+      title: 'CSS Grid 布局模板',
+      description: '响应式网格布局的最佳实践',
+      tags: ['css', 'grid', 'responsive'],
+      language: 'css',
+      author: 'ui_designer',
+      createdAt: '2024-01-13',
+      isPrivate: false,
+      preview: '.grid-container {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));\n  gap: 20px;\n}'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* 导航栏 */}
-      <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <CodeOutlined className="text-2xl text-blue-600 mr-2" />
-              <span className="text-xl font-bold text-gray-900">CodeSnip</span>
+            <div className="flex items-center space-x-3">
+              <Code className="h-8 w-8 text-blue-600" />
+              <h1 className="text-2xl font-bold text-gray-900">CodeSnip</h1>
             </div>
             
-            <Space>
-              <Button 
-                type="text"
-                onClick={() => navigate('/browse')}
-              >
-                浏览代码
-              </Button>
-              <Button 
-                type="primary"
-                onClick={() => navigate('/create')}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                创建代码片段
-              </Button>
-            </Space>
-          </div>
-        </div>
-      </nav>
-
-      {/* 主要内容 */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        {/* Hero Section */}
-        <div className="text-center mb-20">
-          <Title level={1} className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-6">
-            CodeSnip
-          </Title>
-          <Paragraph className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            优雅地创建、分享和管理你的代码片段。<br />
-            像 Carbon 一样美观，像 Gist 一样简单。
-          </Paragraph>
-          
-          <Space size="large" className="mb-12">
-            <Button 
-              type="primary" 
-              size="large"
-              onClick={() => navigate('/create')}
-              className="bg-blue-600 hover:bg-blue-700 h-12 px-8 text-lg"
-            >
-              立即开始创建
-            </Button>
-            <Button 
-              size="large"
-              onClick={() => navigate('/browse')}
-              className="h-12 px-8 text-lg"
-            >
-              浏览示例
-            </Button>
-          </Space>
-
-          {/* 预览图片占位 */}
-          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl mx-auto">
-            <div className="bg-gray-900 rounded-lg p-6">
-              <div className="flex items-center mb-4">
-                <div className="flex space-x-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                </div>
-                <div className="ml-auto text-gray-400 text-sm">main.js</div>
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  type="text"
+                  placeholder="搜索代码片段..."
+                  className="pl-10 w-64"
+                />
               </div>
-              <div className="text-left space-y-2 font-mono text-sm">
-                <div className="text-purple-400">// 欢迎使用 CodeSnip</div>
-                <div className="text-blue-400">function <span className="text-yellow-400">greet</span>(<span className="text-green-400">name</span>) {</div>
-                <div className="text-gray-300 ml-4">console.<span className="text-blue-400">log</span>(<span className="text-green-300">`Hello, ${'{'}name{'}'} 👋`</span>);</div>
-                <div className="text-blue-400">}</div>
-                <div className="text-yellow-400">greet</div>(<span className="text-green-300">'CodeSnip'</span>);
-              </div>
+              <Link to="/create">
+                <Button className="flex items-center space-x-2">
+                  <Plus className="h-4 w-4" />
+                  <span>创建片段</span>
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
+      </header>
 
-        <Divider className="my-20" />
-
-        {/* 特性介绍 */}
-        <div className="text-center mb-16">
-          <Title level={2} className="text-3xl md:text-4xl font-bold mb-4">
-            为什么选择 CodeSnip？
-          </Title>
-          <Paragraph className="text-lg text-gray-600 max-w-2xl mx-auto">
-            我们结合了最佳的代码分享工具的优点，创造出既美观又实用的代码片段分享平台
-          </Paragraph>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature, index) => (
-            <Card
-              key={index}
-              className="text-center h-full hover:shadow-lg transition-all duration-300 border-0 bg-white/60 backdrop-blur-sm"
-              bodyStyle={{ padding: '2rem' }}
-            >
-              <div className="mb-4">{feature.icon}</div>
-              <Title level={4} className="mb-3">{feature.title}</Title>
-              <Paragraph className="text-gray-600 text-sm">
-                {feature.description}
-              </Paragraph>
-            </Card>
-          ))}
-        </div>
-
-        {/* CTA Section */}
-        <div className="text-center mt-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-12 text-white">
-          <Title level={2} className="text-white mb-4">
-            准备好分享你的代码了吗？
-          </Title>
-          <Paragraph className="text-blue-100 mb-8 text-lg">
-            加入数千名开发者，开始创建和分享优美的代码片段
-          </Paragraph>
-          <Button 
-            type="primary"
-            size="large"
-            onClick={() => navigate('/create')}
-            className="bg-white text-blue-600 hover:bg-gray-100 border-0 h-12 px-8 text-lg font-semibold"
-          >
-            创建我的第一个代码片段
-          </Button>
-        </div>
-      </div>
-
-      {/* 页脚 */}
-      <footer className="bg-gray-900 text-white py-12 mt-20">
+      {/* Hero Section */}
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex items-center justify-center mb-4">
-            <CodeOutlined className="text-2xl mr-2" />
-            <span className="text-xl font-bold">CodeSnip</span>
+          <h2 className="text-4xl font-bold text-gray-900 mb-6">
+            优雅分享你的代码片段
+          </h2>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            CodeSnip 让你轻松创建、分享和管理代码片段。支持多种编程语言，提供美观的代码高亮和实时预览。
+          </p>
+          <div className="flex justify-center space-x-4">
+            <Link to="/create">
+              <Button size="lg" className="flex items-center space-x-2">
+                <Plus className="h-5 w-5" />
+                <span>开始创建</span>
+              </Button>
+            </Link>
+            <Button variant="outline" size="lg" className="flex items-center space-x-2">
+              <Share className="h-5 w-5" />
+              <span>浏览公开片段</span>
+            </Button>
           </div>
-          <Paragraph className="text-gray-400">
-            让代码分享变得更简单、更优雅
-          </Paragraph>
-          <div className="text-sm text-gray-500">
-            © 2024 CodeSnip. Built with ❤️ by developers, for developers.
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h3 className="text-3xl font-bold text-center text-gray-900 mb-12">
+            为什么选择 CodeSnip？
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card>
+              <CardHeader>
+                <Code className="h-8 w-8 text-blue-600 mb-2" />
+                <CardTitle>多语言支持</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  支持 JavaScript、Python、CSS、HTML 等多种编程语言，提供语法高亮和智能补全。
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <Share className="h-8 w-8 text-green-600 mb-2" />
+                <CardTitle>便捷分享</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  一键生成分享链接，支持公开和私密分享模式，让协作变得更简单。
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <Lock className="h-8 w-8 text-purple-600 mb-2" />
+                <CardTitle>安全可靠</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  支持密码保护和过期时间设置，确保你的代码片段安全可控。
+                </CardDescription>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Recent Snippets Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center mb-8">
+            <h3 className="text-3xl font-bold text-gray-900">最近的代码片段</h3>
+            <Button variant="outline">查看全部</Button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {recentSnippets.map((snippet) => (
+              <Card key={snippet.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-lg">{snippet.title}</CardTitle>
+                    {snippet.isPrivate && (
+                      <Badge variant="secondary" className="flex items-center space-x-1">
+                        <Lock className="h-3 w-3" />
+                        <span>私密</span>
+                      </Badge>
+                    )}
+                  </div>
+                  <CardDescription className="text-sm">
+                    {snippet.description}
+                  </CardDescription>
+                </CardHeader>
+                
+                <CardContent>
+                  <div className="mb-4">
+                    <pre className="bg-gray-100 p-3 rounded-md text-sm overflow-x-auto">
+                      <code>{snippet.preview}</code>
+                    </pre>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {snippet.tags.map((tag) => (
+                      <Badge key={tag} variant="outline" className="text-xs">
+                        <Tag className="h-3 w-3 mr-1" />
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                  
+                  <div className="flex justify-between items-center text-xs text-gray-500">
+                    <div className="flex items-center space-x-1">
+                      <User className="h-3 w-3" />
+                      <span>{snippet.author}</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Calendar className="h-3 w-3" />
+                      <span>{snippet.createdAt}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center space-x-3 mb-4">
+                <Code className="h-6 w-6" />
+                <span className="text-lg font-semibold">CodeSnip</span>
+              </div>
+              <p className="text-gray-400 text-sm">
+                让代码分享变得更简单、更优雅。
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4">产品</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><a href="#" className="hover:text-white">功能特性</a></li>
+                <li><a href="#" className="hover:text-white">使用指南</a></li>
+                <li><a href="#" className="hover:text-white">API 文档</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4">支持</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><a href="#" className="hover:text-white">帮助中心</a></li>
+                <li><a href="#" className="hover:text-white">联系我们</a></li>
+                <li><a href="#" className="hover:text-white">反馈建议</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4">关于</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><a href="#" className="hover:text-white">关于我们</a></li>
+                <li><a href="#" className="hover:text-white">隐私政策</a></li>
+                <li><a href="#" className="hover:text-white">服务条款</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
+            <p>&copy; 2024 CodeSnip. All rights reserved.</p>
           </div>
         </div>
       </footer>
