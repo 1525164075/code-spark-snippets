@@ -64,7 +64,13 @@ export class MockSnippetService implements SnippetRouteHandlers {
     const now = new Date();
     const snippet: ICodeSnippet = {
       _id: id,
-      ...request,
+      title: request.title,
+      files: request.files,
+      description: request.description,
+      tags: request.tags,
+      visibility: request.visibility,
+      password: request.password,
+      expiresAt: request.expiresAt,
       createdAt: now,
       updatedAt: now
     };
