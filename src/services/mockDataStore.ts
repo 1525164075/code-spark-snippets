@@ -17,7 +17,8 @@ class MockDataStore {
       description: '一个用于管理 localStorage 的自定义 React Hook，支持 JSON 序列化和错误处理',
       tags: ['react', 'hooks', 'utils'],
       visibility: 'public',
-      createdAt: new Date('2024-01-15')
+      createdAt: new Date('2024-01-15'),
+      updatedAt: new Date('2024-01-15')
     },
     {
       _id: 'snippet-2',
@@ -32,7 +33,8 @@ class MockDataStore {
       description: '常用的 CSS 动画效果合集，包含淡入、滑入等效果',
       tags: ['css', 'animation', 'ui'],
       visibility: 'public',
-      createdAt: new Date('2024-01-14')
+      createdAt: new Date('2024-01-14'),
+      updatedAt: new Date('2024-01-14')
     },
     {
       _id: 'snippet-3',
@@ -47,7 +49,8 @@ class MockDataStore {
       description: '实用的 TypeScript 工具类型定义，提高类型安全性',
       tags: ['typescript', 'types', 'utils'],
       visibility: 'public',
-      createdAt: new Date('2024-01-13')
+      createdAt: new Date('2024-01-13'),
+      updatedAt: new Date('2024-01-13')
     },
     {
       _id: 'snippet-4',
@@ -62,7 +65,8 @@ class MockDataStore {
       description: '简单的 API 请求封装类，支持 GET、POST 等方法',
       tags: ['javascript', 'api', 'fetch'],
       visibility: 'public',
-      createdAt: new Date('2024-01-12')
+      createdAt: new Date('2024-01-12'),
+      updatedAt: new Date('2024-01-12')
     },
     {
       _id: 'snippet-5',
@@ -77,7 +81,8 @@ class MockDataStore {
       description: 'SCSS 响应式设计混入，简化媒体查询的使用',
       tags: ['scss', 'responsive', 'css'],
       visibility: 'public',
-      createdAt: new Date('2024-01-11')
+      createdAt: new Date('2024-01-11'),
+      updatedAt: new Date('2024-01-11')
     }
   ];
 
@@ -94,6 +99,7 @@ class MockDataStore {
     // 模拟网络延迟
     await new Promise(resolve => setTimeout(resolve, 1000));
     
+    const now = new Date();
     const newSnippet: ICodeSnippet = {
       _id: 'snippet-' + Date.now(),
       title: data.title,
@@ -101,7 +107,8 @@ class MockDataStore {
       description: data.description,
       tags: data.tags,
       visibility: data.visibility,
-      createdAt: new Date()
+      createdAt: now,
+      updatedAt: now
     };
 
     // 添加到数据存储的开头（最新的在前面）
