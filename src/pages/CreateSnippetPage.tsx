@@ -51,7 +51,6 @@ const CreateSnippetPage: React.FC = () => {
     },
     onSuccess: (data) => {
       console.log('Mutation success, data:', data);
-      // Invalidate queries to trigger refetch
       queryClient.invalidateQueries({ queryKey: ['snippets'] });
       queryClient.invalidateQueries({ queryKey: ['userSnippets'] });
       
@@ -66,8 +65,6 @@ const CreateSnippetPage: React.FC = () => {
     },
     onError: (error: any) => {
       console.error('Mutation failed with error:', error);
-      console.error('Error type:', typeof error);
-      console.error('Error message:', error.message);
       
       let errorMessage = error.message || t('errors.checkInput');
       
@@ -79,7 +76,7 @@ const CreateSnippetPage: React.FC = () => {
     }
   });
 
-  // Submit handling function
+  // Submit handling function with improved validation
   const handleSubmit = useCallback(async () => {
     console.log('Submit started with state:', { 
       title, 
@@ -89,7 +86,7 @@ const CreateSnippetPage: React.FC = () => {
       tagsCount: tags.length
     });
     
-    // Validation
+    // Enhanced validation
     if (!title.trim()) {
       console.error('Validation failed: Title is empty');
       toast({
@@ -110,6 +107,18 @@ const CreateSnippetPage: React.FC = () => {
       return;
     }
 
+    // 检查是否有内容过长的文件
+    const maxFileSize = 500000; // 500KB per file
+    const oversizedFiles = files.filter(file => file.content.length > maxFileSize);
+    if (oversizedFiles.length > 0) {
+      toast({
+        title: t('common.error'),
+        description: `文件 "${oversizedFiles[0].filename}" 内容过大，请减少内容长度`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     const hasEmptyFiles = files.some(file => !file.content.trim());
     if (hasEmptyFiles) {
       console.warn('Warning: Some files are empty');
@@ -117,7 +126,6 @@ const CreateSnippetPage: React.FC = () => {
       if (!confirmContinue) return;
     }
 
-    // Validate private snippet password
     if (visibility === 'private' && password.length < 6) {
       console.error('Validation failed: Password too short for private snippet');
       toast({
@@ -128,30 +136,58 @@ const CreateSnippetPage: React.FC = () => {
       return;
     }
 
-    // Clean and validate file data before submission
-    const cleanedFiles = files.map(file => {
-      const cleanFilename = (file.filename || 'untitled').trim();
-      const cleanLanguage = (file.language || 'javascript').trim();
-      const cleanContent = (file.content || '').trim();
+    // 更严格的数据预处理
+    const processedFiles = files.map(file => {
+      let content = (file.content || '').trim();
+      let filename = (file.filename || 'untitled').trim();
+      let language = (file.language || 'javascript').trim();
       
-      // Check for problematic characters that might cause encoding issues
-      if (cleanContent.includes('\uFEFF')) {
-        console.warn('BOM character detected in file content, removing...');
+      // 检测和处理潜在的编码问题
+      try {
+        // 移除潜在的问题字符
+        content = content
+          .replace(/\uFEFF/g, '') // BOM
+          .replace(/\u0000/g, '') // NULL
+          .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''); // 控制字符
+        
+        // 验证内容可以正确编码
+        const testEncode = encodeURIComponent(content);
+        const testDecode = decodeURIComponent(testEncode);
+        
+        if (testDecode !== content) {
+          console.warn(`Encoding issue detected in file: ${filename}`);
+        }
+      } catch (encodingError) {
+        console.error('Content encoding error:', encodingError);
+        toast({
+          title: t('common.error'),
+          description: `文件 "${filename}" 包含无法处理的字符，请检查内容`,
+          variant: "destructive",
+        });
+        return null;
       }
-      
-      return {
-        filename: cleanFilename,
-        language: cleanLanguage,
-        content: cleanContent.replace(/\uFEFF/g, '') // Remove BOM
-      };
-    });
 
-    // Build request data with careful validation
+      return {
+        filename: filename.substring(0, 100), // 限制文件名长度
+        language,
+        content
+      };
+    }).filter(Boolean) as ICodeFile[];
+
+    if (processedFiles.length === 0) {
+      toast({
+        title: t('common.error'),
+        description: '没有有效的文件内容',
+        variant: "destructive",
+      });
+      return;
+    }
+
     const requestData: CreateSnippetRequest = {
-      title: title.trim(),
-      files: cleanedFiles,
-      description: description.trim(),
-      tags: tags.filter(tag => tag && tag.trim().length > 0),
+      title: title.trim().substring(0, 200),
+      files: processedFiles,
+      description: description.trim().substring(0, 1000),
+      tags: tags.filter(tag => tag && tag.trim().length > 0).slice(0, 10),
       visibility: visibility,
       password: visibility === 'private' ? password : undefined,
       expiresAt: expiryDate || undefined,
@@ -163,7 +199,6 @@ const CreateSnippetPage: React.FC = () => {
       files: requestData.files.map(f => ({ ...f, content: `[${f.content.length} chars]` }))
     });
 
-    // Execute creation
     try {
       mutation.mutate(requestData);
     } catch (error: any) {
