@@ -35,29 +35,50 @@ export const apiService = {
     console.log('Creating snippet with data:', snippetData);
     
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not authenticated');
+    if (!user) throw new Error('用户未认证');
 
-    // Ensure we have valid data
+    // Validate required data
     if (!snippetData.files || snippetData.files.length === 0) {
-      throw new Error('At least one file is required');
+      throw new Error('至少需要一个代码文件');
     }
 
     if (!snippetData.title || !snippetData.title.trim()) {
-      throw new Error('Title is required');
+      throw new Error('标题不能为空');
     }
 
     try {
+      // Clean and validate file data to prevent encoding issues
+      const cleanFiles = snippetData.files.map(file => ({
+        filename: (file.filename || 'untitled').trim(),
+        language: (file.language || 'javascript').trim(),
+        content: (file.content || '').trim()
+      }));
+
+      // Ensure content is properly encoded as UTF-8 string
+      const contentString = JSON.stringify(cleanFiles);
+      
+      // Validate JSON can be parsed back (encoding check)
+      try {
+        JSON.parse(contentString);
+      } catch (parseError) {
+        console.error('JSON encoding validation failed:', parseError);
+        throw new Error('代码内容编码错误，请检查特殊字符');
+      }
+
       const snippet = {
         title: snippetData.title.trim(),
-        description: snippetData.description || '',
-        content: JSON.stringify(snippetData.files),
-        language: snippetData.files[0]?.language || 'javascript',
-        tags: snippetData.tags || [],
+        description: (snippetData.description || '').trim(),
+        content: contentString,
+        language: cleanFiles[0]?.language || 'javascript',
+        tags: Array.isArray(snippetData.tags) ? snippetData.tags.filter(tag => tag && tag.trim()) : [],
         is_private: snippetData.visibility === 'private',
         author_id: user.id
       };
 
-      console.log('Inserting snippet:', snippet);
+      console.log('Inserting snippet with cleaned data:', {
+        ...snippet,
+        content: `[${contentString.length} chars]`
+      });
 
       const { data, error } = await supabase
         .from('code_snippets')
@@ -67,17 +88,38 @@ export const apiService = {
 
       if (error) {
         console.error('Database error:', error);
-        throw new Error(`Failed to create snippet: ${error.message}`);
+        
+        // Handle specific database errors
+        if (error.message.includes('invalid input syntax')) {
+          throw new Error('代码内容包含无效字符，请检查输入');
+        }
+        if (error.message.includes('value too long')) {
+          throw new Error('代码内容过长，请减少内容长度');
+        }
+        if (error.code === '23505') { // unique violation
+          throw new Error('标题已存在，请使用不同的标题');
+        }
+        
+        throw new Error(`创建失败: ${error.message}`);
       }
 
       console.log('Snippet created successfully:', data);
+
+      // Parse content back and validate
+      let parsedFiles;
+      try {
+        parsedFiles = JSON.parse(data.content);
+      } catch (parseError) {
+        console.error('Failed to parse saved content:', parseError);
+        parsedFiles = cleanFiles; // fallback to original
+      }
 
       // Transform database response to ICodeSnippet format
       return {
         _id: data.id,
         title: data.title,
-        description: data.description,
-        files: JSON.parse(data.content),
+        description: data.description || '',
+        files: parsedFiles,
         tags: data.tags || [],
         visibility: data.is_private ? 'private' : 'public',
         createdAt: new Date(data.created_at),
@@ -85,7 +127,19 @@ export const apiService = {
       };
     } catch (error: any) {
       console.error('Error in createSnippet:', error);
-      throw new Error(error.message || 'Failed to create snippet');
+      
+      // Provide user-friendly error messages
+      if (error.message.includes('encoding') || error.message.includes('编码')) {
+        throw new Error('数据编码错误，请重试');
+      }
+      if (error.message.includes('auth')) {
+        throw new Error('用户认证失败，请重新登录');
+      }
+      if (error.message.includes('network') || error.message.includes('fetch')) {
+        throw new Error('网络连接错误，请检查网络连接');
+      }
+      
+      throw new Error(error.message || '创建失败，请重试');
     }
   },
 
@@ -163,7 +217,7 @@ export const apiService = {
       .from('code_snippets')
       .delete()
       .eq('id', id)
-      .eq('author_id', user.id); // Ensure user can only delete their own snippets
+      .eq('author_id', user.id);
 
     if (error) throw error;
   }

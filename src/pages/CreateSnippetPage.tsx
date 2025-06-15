@@ -35,7 +35,10 @@ const CreateSnippetPage: React.FC = () => {
   // Use useMutation to handle snippet creation
   const mutation = useMutation({
     mutationFn: async (data: CreateSnippetRequest) => {
-      console.log('Mutation started with data:', data);
+      console.log('Mutation started with data:', {
+        ...data,
+        files: data.files.map(f => ({ ...f, content: `[${f.content.length} chars]` }))
+      });
       
       try {
         const result = await apiService.createSnippet(data);
@@ -43,10 +46,7 @@ const CreateSnippetPage: React.FC = () => {
         return result;
       } catch (error: any) {
         console.error('Error creating snippet:', error);
-        // Re-throw with more specific error message
-        const errorMessage = error.message || 'Unknown error occurred';
-        console.error('Detailed error message:', errorMessage);
-        throw new Error(errorMessage);
+        throw error;
       }
     },
     onSuccess: (data) => {
@@ -70,15 +70,6 @@ const CreateSnippetPage: React.FC = () => {
       console.error('Error message:', error.message);
       
       let errorMessage = error.message || t('errors.checkInput');
-      
-      // Handle specific error cases
-      if (errorMessage.includes('baseurl64') || errorMessage.includes('base64url')) {
-        errorMessage = '数据编码错误，请重试';
-      } else if (errorMessage.includes('duplicate') || errorMessage.includes('unique')) {
-        errorMessage = '代码片段可能已存在，请修改标题后重试';
-      } else if (errorMessage.includes('auth')) {
-        errorMessage = '用户认证失败，请重新登录';
-      }
       
       toast({
         title: t('errors.createFailed'),
@@ -137,16 +128,30 @@ const CreateSnippetPage: React.FC = () => {
       return;
     }
 
+    // Clean and validate file data before submission
+    const cleanedFiles = files.map(file => {
+      const cleanFilename = (file.filename || 'untitled').trim();
+      const cleanLanguage = (file.language || 'javascript').trim();
+      const cleanContent = (file.content || '').trim();
+      
+      // Check for problematic characters that might cause encoding issues
+      if (cleanContent.includes('\uFEFF')) {
+        console.warn('BOM character detected in file content, removing...');
+      }
+      
+      return {
+        filename: cleanFilename,
+        language: cleanLanguage,
+        content: cleanContent.replace(/\uFEFF/g, '') // Remove BOM
+      };
+    });
+
     // Build request data with careful validation
     const requestData: CreateSnippetRequest = {
       title: title.trim(),
-      files: files.map(file => ({
-        filename: file.filename || 'untitled',
-        language: file.language || 'javascript',
-        content: file.content || ''
-      })),
+      files: cleanedFiles,
       description: description.trim(),
-      tags: tags.filter(tag => tag.trim().length > 0),
+      tags: tags.filter(tag => tag && tag.trim().length > 0),
       visibility: visibility,
       password: visibility === 'private' ? password : undefined,
       expiresAt: expiryDate || undefined,
@@ -154,7 +159,8 @@ const CreateSnippetPage: React.FC = () => {
 
     console.log('Final request data:', {
       ...requestData,
-      password: requestData.password ? '[REDACTED]' : undefined
+      password: requestData.password ? '[REDACTED]' : undefined,
+      files: requestData.files.map(f => ({ ...f, content: `[${f.content.length} chars]` }))
     });
 
     // Execute creation
@@ -167,7 +173,7 @@ const CreateSnippetPage: React.FC = () => {
 
   // File change handling
   const handleFilesChange = useCallback((newFiles: ICodeFile[]) => {
-    console.log('Files changed:', newFiles);
+    console.log('Files changed:', newFiles.map(f => ({ ...f, content: `[${f.content.length} chars]` })));
     setFiles(newFiles);
   }, []);
 
