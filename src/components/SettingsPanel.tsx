@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CalendarIcon, Plus, X } from 'lucide-react';
 import { format } from 'date-fns';
-import { zhCN } from 'date-fns/locale';
+import { zhCN, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 interface SettingsPanelProps {
@@ -42,6 +43,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
   onSubmit,
   loading
 }) => {
+  const { t, i18n } = useTranslation();
   const [newTag, setNewTag] = React.useState('');
 
   const addTag = () => {
@@ -62,28 +64,31 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
     }
   };
 
+  // Get the appropriate locale for date formatting
+  const dateLocale = i18n.language === 'zh-CN' ? zhCN : enUS;
+
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>基本设置</CardTitle>
+          <CardTitle>{t('create.basicSettings')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* 标题 */}
+          {/* Title */}
           <div>
-            <Label htmlFor="title">标题 *</Label>
+            <Label htmlFor="title">{t('create.titleRequired')}</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="输入代码片段标题"
+              placeholder={t('create.titlePlaceholderText')}
               className="mt-1"
             />
           </div>
 
-          {/* 标签 */}
+          {/* Tags */}
           <div>
-            <Label>标签</Label>
+            <Label>{t('create.tags')}</Label>
             <div className="mt-1 space-y-2">
               <div className="flex flex-wrap gap-2">
                 {tags.map((tag, index) => (
@@ -105,7 +110,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="添加标签"
+                  placeholder={t('create.addTagPlaceholder')}
                   className="flex-1"
                 />
                 <Button onClick={addTag} size="sm" variant="outline">
@@ -115,9 +120,9 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
             </div>
           </div>
 
-          {/* 过期时间 */}
+          {/* Expiry Date */}
           <div>
-            <Label>过期时间</Label>
+            <Label>{t('create.expiryDate')}</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -128,7 +133,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {expiryDate ? format(expiryDate, "PPP", { locale: zhCN }) : "选择过期日期（可选）"}
+                  {expiryDate ? format(expiryDate, "PPP", { locale: dateLocale }) : t('create.expiryDateOptional')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -147,7 +152,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                       onClick={() => setExpiryDate(null)}
                       className="w-full"
                     >
-                      清除过期时间
+                      {t('create.clearExpiryDate')}
                     </Button>
                   </div>
                 )}
@@ -157,34 +162,34 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
         </CardContent>
       </Card>
 
-      {/* 隐私设置 */}
+      {/* Privacy Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>隐私设置</CardTitle>
+          <CardTitle>{t('create.privacySettings')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label>可见性</Label>
+            <Label>{t('create.visibility')}</Label>
             <Select value={visibility} onValueChange={onVisibilityChange}>
               <SelectTrigger className="mt-1">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="public">公开 - 任何人都可以查看</SelectItem>
-                <SelectItem value="private">私有 - 需要密码访问</SelectItem>
+                <SelectItem value="public">{t('create.publicVisibility')}</SelectItem>
+                <SelectItem value="private">{t('create.privateVisibility')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {visibility === 'private' && (
             <div>
-              <Label htmlFor="password">访问密码</Label>
+              <Label htmlFor="password">{t('create.accessPassword')}</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => onPasswordChange(e.target.value)}
-                placeholder="设置访问密码（至少6位）"
+                placeholder={t('create.passwordRequiredPlaceholder')}
                 className="mt-1"
               />
             </div>
@@ -192,14 +197,14 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
         </CardContent>
       </Card>
 
-      {/* 操作按钮 */}
+      {/* Action Button */}
       <Button 
         onClick={onSubmit} 
         disabled={loading}
         className="w-full"
         size="lg"
       >
-        {loading ? '创建中...' : '创建代码片段'}
+        {loading ? t('create.creating') : t('create.createButton')}
       </Button>
     </div>
   );

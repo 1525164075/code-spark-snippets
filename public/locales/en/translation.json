@@ -68,7 +68,19 @@
     "deleteFile": "Delete File",
     "filename": "Filename",
     "language": "Language",
-    "codeContent": "Code Content"
+    "codeContent": "Code Content",
+    "basicSettings": "Basic Settings",
+    "titleRequired": "Title *",
+    "titlePlaceholderText": "Enter snippet title",
+    "tags": "Tags",
+    "addTagPlaceholder": "Add tag",
+    "expiryDateOptional": "Select expiry date (optional)",
+    "clearExpiryDate": "Clear expiry date",
+    "privacySettings": "Privacy Settings",
+    "publicVisibility": "Public - Anyone can view",
+    "privateVisibility": "Private - Password required",
+    "accessPassword": "Access Password",
+    "passwordRequiredPlaceholder": "Set access password (at least 6 characters)"
   },
   "errors": {
     "titleRequired": "Please enter snippet title",

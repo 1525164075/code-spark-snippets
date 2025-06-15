@@ -68,7 +68,19 @@
     "deleteFile": "删除文件",
     "filename": "文件名",
     "language": "语言",
-    "codeContent": "代码内容"
+    "codeContent": "代码内容",
+    "basicSettings": "基本设置",
+    "titleRequired": "标题 *",
+    "titlePlaceholderText": "输入代码片段标题",
+    "tags": "标签",
+    "addTagPlaceholder": "添加标签",
+    "expiryDateOptional": "选择过期日期（可选）",
+    "clearExpiryDate": "清除过期时间",
+    "privacySettings": "隐私设置",
+    "publicVisibility": "公开 - 任何人都可以查看",
+    "privateVisibility": "私有 - 需要密码访问",
+    "accessPassword": "访问密码",
+    "passwordRequiredPlaceholder": "设置访问密码（至少6位）"
   },
   "errors": {
     "titleRequired": "请输入代码片段标题",
