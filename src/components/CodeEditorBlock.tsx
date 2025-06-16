@@ -1,5 +1,5 @@
-
 import React, { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -42,20 +42,21 @@ const THEME_OPTIONS = [
 ];
 
 const CodeEditorBlock: React.FC<CodeEditorBlockProps> = ({ files, onFilesChange }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<string>('0');
   const [theme, setTheme] = useState<string>('vs-dark');
 
   // 添加新文件
   const addFile = useCallback(() => {
     const newFile: ICodeFile = {
-      filename: `代码${files.length + 1}`,
+      filename: `${t('create.filename')}${files.length + 1}`,
       language: 'javascript',
       content: ''
     };
     const newFiles = [...files, newFile];
     onFilesChange(newFiles);
     setActiveTab((newFiles.length - 1).toString());
-  }, [files, onFilesChange]);
+  }, [files, onFilesChange, t]);
 
   // 删除文件
   const removeFile = useCallback((index: number) => {
@@ -96,7 +97,7 @@ const CodeEditorBlock: React.FC<CodeEditorBlockProps> = ({ files, onFilesChange 
     <Card className="mb-6">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle>代码编辑器</CardTitle>
+          <CardTitle>{t('create.codeEditor')}</CardTitle>
           <div className="flex gap-2">
             <Select value={theme} onValueChange={setTheme}>
               <SelectTrigger className="w-24">
@@ -129,7 +130,7 @@ const CodeEditorBlock: React.FC<CodeEditorBlockProps> = ({ files, onFilesChange 
             
             <Button onClick={addFile} size="sm" variant="outline">
               <Plus className="h-4 w-4 mr-1" />
-              添加文件
+              {t('create.addFile')}
             </Button>
           </div>
         </div>

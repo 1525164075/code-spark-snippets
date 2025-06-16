@@ -83,7 +83,8 @@
     "passwordRequiredPlaceholder": "设置访问密码（至少6位）",
     "markdownTitle": "描述 (支持 Markdown)",
     "markdownPlaceholder": "支持 Markdown 语法，例如：\n\n# 这是标题\n这是普通文本段落。\n\n## 功能特性\n- 支持**粗体**和*斜体*\n- 支持 `行内代码`\n- 支持链接：[GitHub](https://github.com)\n\n```javascript\n// 支持代码块\nfunction hello() {\n  console.log('Hello World!');\n}\n```\n\n> 这是引用块\n",
-    "characterCount": "字符"
+    "characterCount": "字符",
+    "codeEditor": "代码编辑器"
   },
   "profile": {
     "title": "用户中心",
@@ -143,6 +144,11 @@
     "deleteAccountSuccess": "账户删除成功",
     "deleteAccountSuccessDesc": "你的账户已被永久删除",
     "deleteAccountFailed": "删除失败"
+  },
+  "share": {
+    "shareLink": "分享链接",
+    "copyLink": "复制链接",
+    "generateShareCard": "生成分享卡片"
   },
   "errors": {
     "titleRequired": "请输入代码片段标题",
