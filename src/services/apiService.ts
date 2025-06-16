@@ -139,24 +139,58 @@ export const apiService = {
   },
 
   async getSnippetById(id: string): Promise<ICodeSnippet | null> {
-    const { data, error } = await supabase
-      .from('code_snippets')
-      .select('*')
-      .eq('id', id)
-      .single();
+    console.log('apiService.getSnippetById called with ID:', id);
+    
+    if (!id || id.trim() === '') {
+      console.error('Invalid ID provided to getSnippetById:', id);
+      return null;
+    }
 
-    if (error) return null;
+    try {
+      console.log('Querying database for snippet with ID:', id);
+      
+      const { data, error } = await supabase
+        .from('code_snippets')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle(); // Use maybeSingle instead of single to avoid errors when no data found
 
-    return {
-      _id: data.id,
-      title: data.title,
-      description: data.description,
-      files: JSON.parse(data.content),
-      tags: data.tags || [],
-      visibility: data.is_private ? 'private' : 'public',
-      createdAt: new Date(data.created_at),
-      updatedAt: new Date(data.updated_at)
-    };
+      console.log('Database query result:', { data, error });
+
+      if (error) {
+        console.error('Database error in getSnippetById:', error);
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      if (!data) {
+        console.log('No snippet found with ID:', id);
+        return null;
+      }
+
+      console.log('Successfully found snippet:', data);
+
+      try {
+        const parsedFiles = JSON.parse(data.content);
+        console.log('Successfully parsed snippet content');
+
+        return {
+          _id: data.id,
+          title: data.title,
+          description: data.description,
+          files: parsedFiles,
+          tags: data.tags || [],
+          visibility: data.is_private ? 'private' : 'public',
+          createdAt: new Date(data.created_at),
+          updatedAt: new Date(data.updated_at)
+        };
+      } catch (parseError) {
+        console.error('Error parsing snippet content:', parseError);
+        throw new Error('Invalid snippet content format');
+      }
+    } catch (error: any) {
+      console.error('Error in getSnippetById:', error);
+      throw error;
+    }
   },
 
   async getUserSnippets(): Promise<ICodeSnippet[]> {

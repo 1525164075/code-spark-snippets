@@ -41,12 +41,42 @@ const SharePage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
 
+  // 添加调试日志
+  useEffect(() => {
+    console.log('SharePage mounted with ID:', id);
+    console.log('Current URL:', window.location.href);
+    console.log('Route params:', { id });
+  }, [id]);
+
   // Fetch snippet data
-  const { data: snippet, isLoading, isError } = useQuery({
+  const { data: snippet, isLoading, isError, error } = useQuery({
     queryKey: ['snippet', id],
-    queryFn: () => apiService.getSnippetById(id!),
+    queryFn: async () => {
+      console.log('Fetching snippet with ID:', id);
+      try {
+        const result = await apiService.getSnippetById(id!);
+        console.log('Snippet fetch result:', result);
+        return result;
+      } catch (err) {
+        console.error('Error fetching snippet:', err);
+        throw err;
+      }
+    },
     enabled: !!id
   });
+
+  // 添加错误调试
+  useEffect(() => {
+    if (isError) {
+      console.error('Query error:', error);
+    }
+    if (snippet === null) {
+      console.log('Snippet is null - not found in database');
+    }
+    if (snippet) {
+      console.log('Snippet loaded successfully:', snippet);
+    }
+  }, [isError, error, snippet]);
 
   // Card generator settings
   const [cardSettings, setCardSettings] = useState<CardSettings>({
@@ -212,17 +242,40 @@ const SharePage: React.FC = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-600">{t('common.loading')}</p>
+          <p className="text-sm text-gray-500 mt-2">Loading snippet ID: {id}</p>
         </div>
       </div>
     );
   }
 
   if (isError || !snippet) {
+    console.log('Rendering error page - isError:', isError, 'snippet:', snippet);
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Code snippet not found</h1>
-          <Button onClick={() => navigate('/')}>Return to home</Button>
+          <p className="text-gray-600 mb-4">
+            The snippet with ID "{id}" could not be found.
+          </p>
+          {isError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4 max-w-md mx-auto">
+              <p className="text-red-800 text-sm">
+                Error: {error?.message || 'Unknown error'}
+              </p>
+            </div>
+          )}
+          <div className="space-y-2">
+            <Button onClick={() => navigate('/')}>Return to home</Button>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                console.log('Retrying fetch for ID:', id);
+                window.location.reload();
+              }}
+            >
+              Retry
+            </Button>
+          </div>
         </div>
       </div>
     );
